@@ -1,5 +1,7 @@
 from experta import Rule, KnowledgeEngine
 
+from Expert_System.facts import Sun
+
 class SunRules(KnowledgeEngine):
     @Rule(Sun(temperature=P(lambda t: t > 4000), composition='hydrogen'))
     def is_main_sequence_star(self):
