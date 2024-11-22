@@ -1,3 +1,35 @@
+.flex-container {
+    display: flex;
+    min-height: 720px;
+    flex-direction: column;
+    gap: 6px;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    align-items: flex-start;
+    justify-content: flex-end;
+    padding-left: 1rem; /* equivalent to px-4 */
+    padding-bottom: 2.5rem; /* equivalent to pb-10 */
+  
+    /* Gradient background and image */
+    background-image: 
+      linear-gradient(
+        rgba(0, 0, 0, 0.1) 0%, 
+        rgba(0, 0, 0, 0.4) 100%
+      ), 
+      url("../static/Media/image1.png");
+  
+    /* Breakpoint styles for larger screens */
+    @media (min-width: 480px) {
+      gap: 2rem; /* equivalent to gap-8 */
+      border-radius: 0.75rem; /* equivalent to rounded-xl */
+      padding-left: 2.5rem; /* equivalent to px-10 */
+    }
+  }
+  
+
+
+
 /* Main container for galaxies section */
 .galaxies-container {
     display: flex;
