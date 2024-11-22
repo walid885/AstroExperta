@@ -1,0 +1,146 @@
+/* Main container for galaxies section */
+.galaxies-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;  /* equivalent to gap-3 */
+    padding-bottom: 0.75rem;  /* equivalent to pb-3 */
+}
+
+/* Image container styling */
+.galaxies-image-container {
+    width: 100%;
+    background-position: center;
+    background-repeat: no-repeat;
+    aspect-ratio: 1 / 1;  /* Makes it square */
+    background-size: cover;
+    border-radius: 0.75rem;  /* equivalent to rounded-xl */
+    background-image: url('../static/Media/galaxiesBG.jpeg');  /* Adjust path as needed */
+}
+
+/* Text content styling */
+.galaxies-title {
+    color: #ffffff;
+    font-size: 1rem;  /* equivalent to text-base */
+    font-weight: 500;  /* equivalent to font-medium */
+    line-height: normal;
+}
+
+.galaxies-subtitle {
+    color: #9dabb8;
+    font-size: 0.875rem;  /* equivalent to text-sm */
+    font-weight: 400;  /* equivalent to font-normal */
+    line-height: normal;
+}
+
+
+
+
+/* Main container for galaxies section */
+.SolarSys-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;  /* equivalent to gap-3 */
+    padding-bottom: 0.75rem;  /* equivalent to pb-3 */
+}
+
+/* Image container styling */
+.SolarSys-image-container {
+    width: 100%;
+    background-position: center;
+    background-repeat: no-repeat;
+    aspect-ratio: 1 / 1;  /* Makes it square */
+    background-size: cover;
+    border-radius: 0.75rem;  /* equivalent to rounded-xl */
+    background-image: url('../static/Media/solarsystemBG.png');  /* Adjust path as needed */
+}
+
+/* Text content styling */
+.SolarSys-title {
+    color: #ffffff;
+    font-size: 1rem;  /* equivalent to text-base */
+    font-weight: 500;  /* equivalent to font-medium */
+    line-height: normal;
+}
+
+.SolarSys-subtitle {
+    color: #9dabb8;
+    font-size: 0.875rem;  /* equivalent to text-sm */
+    font-weight: 400;  /* equivalent to font-normal */
+    line-height: normal;
+}
+
+
+
+
+/* Main container for galaxies section */
+.BH-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;  /* equivalent to gap-3 */
+    padding-bottom: 0.75rem;  /* equivalent to pb-3 */
+}
+
+/* Image container styling */
+.BH-image-container {
+    width: 100%;
+    background-position: center;
+    background-repeat: no-repeat;
+    aspect-ratio: 1 / 1;  /* Makes it square */
+    background-size: cover;
+    border-radius: 0.75rem;  /* equivalent to rounded-xl */
+    background-image: url('../static/Media/blackHolesBG.png');  /* Adjust path as needed */
+}
+
+/* Text content styling */
+.BH-title {
+    color: #ffffff;
+    font-size: 1rem;  /* equivalent to text-base */
+    font-weight: 500;  /* equivalent to font-medium */
+    line-height: normal;
+}
+
+.BH-subtitle {
+    color: #9dabb8;
+    font-size: 0.875rem;  /* equivalent to text-sm */
+    font-weight: 400;  /* equivalent to font-normal */
+    line-height: normal;
+}
+
+
+
+
+
+/* Main container for galaxies section */
+.galaxies-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;  /* equivalent to gap-3 */
+    padding-bottom: 0.75rem;  /* equivalent to pb-3 */
+}
+
+/* Image container styling */
+.galaxies-image-container {
+    width: 100%;
+    background-position: center;
+    background-repeat: no-repeat;
+    aspect-ratio: 1 / 1;  /* Makes it square */
+    background-size: cover;
+    border-radius: 0.75rem;  /* equivalent to rounded-xl */
+    background-image: url('../static/Media/galaxiesBG.jpeg');  /* Adjust path as needed */
+}
+
+/* Text content styling */
+.galaxies-title {
+    color: #ffffff;
+    font-size: 1rem;  /* equivalent to text-base */
+    font-weight: 500;  /* equivalent to font-medium */
+    line-height: normal;
+}
+
+.galaxies-subtitle {
+    color: #9dabb8;
+    font-size: 0.875rem;  /* equivalent to text-sm */
+    font-weight: 400;  /* equivalent to font-normal */
+    line-height: normal;
+}
+

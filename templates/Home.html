@@ -7,6 +7,8 @@
       onload="this.rel='stylesheet'"
       href="https://fonts.googleapis.com/css2?display=swap&amp;family=Noto+Sans%3Awght%40400%3B500%3B700%3B900&amp;family=Space+Grotesk%3Awght%40400%3B500%3B700"
     />
+    <link rel="stylesheet" href="style.css" />
+
 
     <title>Astro Academy</title>
     <link rel="icon" type="image/x-icon" href="data:image/x-icon;base64," />
@@ -113,16 +115,18 @@
             <h2 class="text-white text-[22px] font-bold leading-tight tracking-[-0.015em] px-4 pb-3 pt-5">Featured Courses</h2>
             <div class="grid grid-cols-[repeat(auto-fit,minmax(158px,1fr))] gap-3 p-4">
 
-              <div class="flex flex-col gap-3 pb-3">
-                <div
-                  class="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-xl"
-                  style="background-image: url('static/Media/solarsystemBG.png');"
-                ></div>
+
+
+
+
+
+              <div class="SolarSys-container">
+                <div class="SolarSys-image-container"></div>
                 <div>
-                  <p class="text-white text-base font-medium leading-normal">Planets of the Solar System</p>
-                  <p class="text-[#9dabb8] text-sm font-normal leading-normal">6 weeks, 12 lessons</p>
+                    <p class="SolarSys-title">Planets of the Solar System</p>
+                    <p class="SolarSys-subtitle">6 weeks, 12 lessons</p>
+                  </div>
                 </div>
-              </div>
             
               <div class="flex flex-col gap-3 pb-3">
                 <div
@@ -134,17 +138,15 @@
                   <p class="text-[#9dabb8] text-sm font-normal leading-normal">3 weeks, 6 lessons</p>
                 </div>
               </div>
-              <div class="flex flex-col gap-3 pb-3">
-                <div
-                class="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-xl"
-                style="background-image: url('{{ url_for('static', filename='Media/galaxiesBG.jpeg') }}');"
-                ></div>
-              
+              <div class="galaxies-container">
+                <div class="galaxies-image-container"></div>
                 <div>
-                  <p class="text-white text-base font-medium leading-normal">Galaxies</p>
-                  <p class="text-[#9dabb8] text-sm font-normal leading-normal">5 weeks, 10 lessons</p>
+                    <p class="galaxies-title">Galaxies</p>
+                    <p class="galaxies-subtitle">5 weeks, 10 lessons</p>
                 </div>
-              <div class="flex flex-col gap-3 pb-3">
+            </div>  
+
+            <div class="flex flex-col gap-3 pb-3">
                 <div
                   class="w-full bg-center bg-no-repeat aspect-square bg-cover rounded-xl"
                   style='background-image: url("https://cdn.usegalileo.ai/sdxl10/09e7893f-4ee2-4737-8f94-637f611151f3.png");'
