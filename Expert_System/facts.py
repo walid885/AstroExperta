@@ -116,3 +116,16 @@ class Neptune(Fact):
     orbital_period = None 
     rotation_period = None
     unique_features = None
+
+from experta import KnowledgeEngine, Fact, Rule, AS, NOT, W, MATCH
+from typing import Dict, List, Optional
+import random
+
+class PlanetQuestion(Fact):
+    """Fact representing a user's answer to a question about a planet."""
+    pass
+
+class PlanetFeature(Fact):
+    """Fact representing a specific feature of a planet."""
+    pass
+

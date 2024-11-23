@@ -1,8 +1,3 @@
-from experta import KnowledgeEngine
-from typing import Dict, List, Optional
-import random
-from facts import PlanetQuestion, PlanetFeature
-
 class SolarSystemExpert(KnowledgeEngine):
     def __init__(self):
         super().__init__()
@@ -110,3 +105,7 @@ class SolarSystemExpert(KnowledgeEngine):
                 feature_map
             )
             self.asked_questions.add(question_id)
+
+if __name__ == "__main__":
+    expert = SolarSystemExpert()
+    expert.play_game()

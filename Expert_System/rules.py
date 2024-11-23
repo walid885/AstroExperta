@@ -125,3 +125,4 @@ class NeptuneRules(KnowledgeEngine):
     @Rule(Neptune(unique_features="Strongest winds in the Solar System"))
     def strong_winds(self):
         print("Neptune has the strongest winds in the Solar System.")
+
