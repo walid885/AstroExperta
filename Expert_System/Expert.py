@@ -1,4 +1,9 @@
-class SolarSystemExpert(KnowledgeEngine):
+import random
+from typing import Dict, Optional
+from Expert_System import knowledge_engine
+
+
+class SolarSystemExpert(knowledge_engine):
     def __init__(self):
         super().__init__()
         self.possible_planets = {
