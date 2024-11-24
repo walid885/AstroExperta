@@ -45,6 +45,40 @@ class SolarSystemExpert(KnowledgeEngine):
         ]
         self.asked_questions = set()
         
+    def provide_info(self, object_name: str):
+        """Provide interesting information about the guessed object."""
+        info = {
+            'Sagittarius A*': """
+                This is the supermassive black hole at the center of our Milky Way galaxy!
+                - Mass: About 4.3 million solar masses
+                - Distance: Around 26,000 light-years from Earth
+                - First imaged by the Event Horizon Telescope in 2022
+            """,
+            'M87*': """
+                This is the supermassive black hole at the center of galaxy M87!
+                - Mass: About 6.5 billion solar masses
+                - Distance: About 55 million light-years from Earth
+                - First black hole ever to be imaged (2019)
+            """,
+            'Cygnus X-1': """
+                This is a stellar-mass black hole in a binary system!
+                - Mass: About 21 solar masses
+                - Distance: About 6,070 light-years from Earth
+                - First black hole candidate ever discovered
+            """,
+            'TON 618': """
+                This is one of the most massive known black holes!
+                - Mass: About 66 billion solar masses
+                - Distance: About 10.4 billion light-years from Earth
+                - Located in a very distant quasar
+            """
+        }
+        
+        if object_name in info:
+            print("\nInteresting facts about", object_name + ":")
+            print(info[object_name])
+
+        
     def ask_question(self) -> Optional[tuple]:
         """Select the next most informative question to ask."""
         remaining_questions = [q for q in self.questions if q[0] not in self.asked_questions]

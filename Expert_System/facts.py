@@ -116,6 +116,18 @@ class Neptune(Fact):
     orbital_period = None 
     rotation_period = None
     unique_features = None
+    
+class BlackHole(Fact):
+    """Fact: Represents properties of a Black Hole."""
+    type = None  # Stellar, Supermassive, Intermediate-mass, Primordial
+    mass = None
+    size = None  # Event horizon radius
+    location = None
+    formation_method = None
+    unique_features = None
+    discovery_year = None
+    associated_phenomena = None  # Jets, accretion disk, etc.
+
 
 from experta import KnowledgeEngine, Fact, Rule, AS, NOT, W, MATCH
 from typing import Dict, List, Optional
