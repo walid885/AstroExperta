@@ -1,9 +1,10 @@
+from experta import KnowledgeEngine
+from typing import Dict, List, Optional
 import random
-from typing import Dict, Optional
-from Expert_System import knowledge_engine
+import math
+from facts import PlanetQuestion, PlanetFeature
 
-
-class SolarSystemExpert(knowledge_engine):
+class SolarSystemExpert(KnowledgeEngine):
     def __init__(self):
         super().__init__()
         self.possible_planets = {
@@ -44,15 +45,52 @@ class SolarSystemExpert(knowledge_engine):
             })
         ]
         self.asked_questions = set()
-        
+
+    def calculate_entropy(self, probabilities: List[float]) -> float:
+        """Calculate entropy from a list of probabilities."""
+        return -sum(p * math.log2(p) for p in probabilities if p > 0)
+
+    def compute_question_entropy(self, feature_map: Dict[str, bool]) -> float:
+        """Calculate the expected entropy of a question based on planet probabilities."""
+        true_group = []  # Probabilities of planets answering True
+        false_group = []  # Probabilities of planets answering False
+
+        for planet, probability in self.possible_planets.items():
+            if feature_map[planet]:
+                true_group.append(probability)
+            else:
+                false_group.append(probability)
+
+        # Normalize groups
+        total = sum(true_group) + sum(false_group)
+        if total > 0:
+            true_prob = sum(true_group) / total
+            false_prob = sum(false_group) / total
+        else:
+            true_prob = false_prob = 0
+
+        # Calculate weighted entropy
+        entropy_true = self.calculate_entropy(true_group)
+        entropy_false = self.calculate_entropy(false_group)
+
+        return true_prob * entropy_true + false_prob * entropy_false
+
     def ask_question(self) -> Optional[tuple]:
-        """Select the next most informative question to ask."""
+        """Select the next most informative question to ask based on entropy."""
         remaining_questions = [q for q in self.questions if q[0] not in self.asked_questions]
         if not remaining_questions:
             return None
-        
-        return random.choice(remaining_questions)
-    
+
+        # Calculate entropy for each question
+        question_entropies = []
+        for question_id, question_text, feature_map in remaining_questions:
+            entropy = self.compute_question_entropy(feature_map)
+            question_entropies.append((entropy, (question_id, question_text, feature_map)))
+
+        # Select the question with the lowest entropy
+        _, best_question = min(question_entropies, key=lambda x: x[0])
+        return best_question
+
     def update_probabilities(self, question_id: str, answer: bool, feature_map: Dict[str, bool]):
         """Update planet probabilities based on the user's answer."""
         for planet, probability in self.possible_planets.items():
@@ -60,7 +98,7 @@ class SolarSystemExpert(knowledge_engine):
                 self.possible_planets[planet] *= 0.9
             else:
                 self.possible_planets[planet] *= 0.1
-                
+
         # Normalize probabilities
         total = sum(self.possible_planets.values())
         if total > 0:
@@ -102,7 +140,7 @@ class SolarSystemExpert(knowledge_engine):
             question_id, question_text, feature_map = next_question
             print(f"\n{question_text}")
             answer = input().lower().strip()
-            
+
             # Update probabilities based on answer
             self.update_probabilities(
                 question_id,
@@ -110,7 +148,3 @@ class SolarSystemExpert(knowledge_engine):
                 feature_map
             )
             self.asked_questions.add(question_id)
-
-if __name__ == "__main__":
-    expert = SolarSystemExpert()
-    expert.play_game()
