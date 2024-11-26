@@ -7,8 +7,8 @@ class SolarSystemExpert(KnowledgeEngine):
     def __init__(self):
         super().__init__()
         self.possible_planets = {
-            'Mercury': 1.0, 'Venus': 1.0, 'Earth': 1.0, 'Mars': 1.0,
-            'Jupiter': 1.0, 'Saturn': 1.0, 'Uranus': 1.0, 'Neptune': 1.0
+            'Mercury': 1.0 / 8, 'Venus': 1.0 / 8, 'Earth': 1.0 / 8, 'Mars': 1.0 / 8,
+            'Jupiter': 1.0 / 8, 'Saturn': 1.0 / 8, 'Uranus': 1.0 / 8, 'Neptune': 1.0 / 8
         }
         self.questions = [
             ("is_gas_giant", "Is it a gas giant?", {
@@ -44,57 +44,43 @@ class SolarSystemExpert(KnowledgeEngine):
             })
         ]
         self.asked_questions = set()
-        
-    def provide_info(self, object_name: str):
-        """Provide interesting information about the guessed object."""
-        info = {
-            'Sagittarius A*': """
-                This is the supermassive black hole at the center of our Milky Way galaxy!
-                - Mass: About 4.3 million solar masses
-                - Distance: Around 26,000 light-years from Earth
-                - First imaged by the Event Horizon Telescope in 2022
-            """,
-            'M87*': """
-                This is the supermassive black hole at the center of galaxy M87!
-                - Mass: About 6.5 billion solar masses
-                - Distance: About 55 million light-years from Earth
-                - First black hole ever to be imaged (2019)
-            """,
-            'Cygnus X-1': """
-                This is a stellar-mass black hole in a binary system!
-                - Mass: About 21 solar masses
-                - Distance: About 6,070 light-years from Earth
-                - First black hole candidate ever discovered
-            """,
-            'TON 618': """
-                This is one of the most massive known black holes!
-                - Mass: About 66 billion solar masses
-                - Distance: About 10.4 billion light-years from Earth
-                - Located in a very distant quasar
-            """
-        }
-        
-        if object_name in info:
-            print("\nInteresting facts about", object_name + ":")
-            print(info[object_name])
 
-        
+    def calculate_information_gain(self, question: tuple) -> float:
+        """Calculate the information gain for a given question."""
+        feature_map = question[2]
+        total_entropy = self.calculate_entropy(self.possible_planets)
+        yes_probs = {planet: self.possible_planets[planet] for planet in feature_map if feature_map[planet]}
+        no_probs = {planet: self.possible_planets[planet] for planet in feature_map if not feature_map[planet]}
+        yes_entropy = self.calculate_entropy(yes_probs)
+        no_entropy = self.calculate_entropy(no_probs)
+        weight_yes = sum(yes_probs.values()) / sum(self.possible_planets.values())
+        weight_no = sum(no_probs.values()) / sum(self.possible_planets.values())
+        information_gain = total_entropy - (weight_yes * yes_entropy + weight_no * no_entropy)
+        return information_gain
+
+    def calculate_entropy(self, probabilities: Dict[str, float]) -> float:
+        """Calculate the entropy of a probability distribution."""
+        from math import log2
+        return -sum(p * log2(p) for p in probabilities.values() if p > 0)
+
     def ask_question(self) -> Optional[tuple]:
         """Select the next most informative question to ask."""
         remaining_questions = [q for q in self.questions if q[0] not in self.asked_questions]
         if not remaining_questions:
             return None
-        
-        return random.choice(remaining_questions)
-    
+
+        question_gains = [(self.calculate_information_gain(q), q) for q in remaining_questions]
+        best_question = max(question_gains, key=lambda x: x[0])[1]
+        return best_question
+
     def update_probabilities(self, question_id: str, answer: bool, feature_map: Dict[str, bool]):
         """Update planet probabilities based on the user's answer."""
-        for planet, probability in self.possible_planets.items():
+        for planet in list(self.possible_planets.keys()):
             if feature_map[planet] == answer:
-                self.possible_planets[planet] *= 0.9
+                self.possible_planets[planet] *= 1.5
             else:
-                self.possible_planets[planet] *= 0.1
-                
+                self.possible_planets[planet] *= 0.5
+        
         # Normalize probabilities
         total = sum(self.possible_planets.values())
         if total > 0:
@@ -137,10 +123,18 @@ class SolarSystemExpert(KnowledgeEngine):
             print(f"\n{question_text}")
             answer = input().lower().strip()
             
+            if answer not in ['yes', 'no']:
+                print("Please answer with 'yes' or 'no'.")
+                continue
+            
             # Update probabilities based on answer
             self.update_probabilities(
                 question_id,
-                answer.startswith('y'),
+                answer == 'yes',
                 feature_map
             )
             self.asked_questions.add(question_id)
+
+if __name__ == "__main__":
+    expert = SolarSystemExpert()
+    expert.play_game()
