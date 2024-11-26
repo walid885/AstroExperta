@@ -1,8 +1,6 @@
 from experta import KnowledgeEngine
 from typing import Dict, List, Optional
-import random
 import math
-from facts import PlanetQuestion, PlanetFeature
 
 class SolarSystemExpert(KnowledgeEngine):
     def __init__(self):
@@ -11,39 +9,47 @@ class SolarSystemExpert(KnowledgeEngine):
             'Mercury': 1.0, 'Venus': 1.0, 'Earth': 1.0, 'Mars': 1.0,
             'Jupiter': 1.0, 'Saturn': 1.0, 'Uranus': 1.0, 'Neptune': 1.0
         }
-        self.questions = [
-            ("is_gas_giant", "Is it a gas giant?", {
-                'Jupiter': True, 'Saturn': True, 'Uranus': True, 'Neptune': True,
-                'Mercury': False, 'Venus': False, 'Earth': False, 'Mars': False
-            }),
-            ("has_rings", "Does it have prominent rings?", {
-                'Saturn': True, 'Uranus': True, 'Jupiter': True, 'Neptune': True,
-                'Mercury': False, 'Venus': False, 'Earth': False, 'Mars': False
-            }),
-            ("is_inner_planet", "Is it one of the inner planets (closer to the Sun)?", {
-                'Mercury': True, 'Venus': True, 'Earth': True, 'Mars': True,
-                'Jupiter': False, 'Saturn': False, 'Uranus': False, 'Neptune': False
-            }),
-            ("has_atmosphere", "Does it have a substantial atmosphere?", {
-                'Venus': True, 'Earth': True, 'Jupiter': True, 'Saturn': True,
-                'Uranus': True, 'Neptune': True, 'Mars': False, 'Mercury': False
-            }),
-            ("is_habitable", "Is it potentially habitable or known to harbor life?", {
-                'Earth': True,
-                'Mercury': False, 'Venus': False, 'Mars': False,
-                'Jupiter': False, 'Saturn': False, 'Uranus': False, 'Neptune': False
-            }),
-            ("extreme_temp", "Is it known for extreme temperatures?", {
-                'Mercury': True, 'Venus': True,
-                'Earth': False, 'Mars': False, 'Jupiter': False,
-                'Saturn': False, 'Uranus': False, 'Neptune': False
-            }),
-            ("has_moons", "Does it have significant moons?", {
-                'Earth': True, 'Mars': True, 'Jupiter': True, 'Saturn': True,
-                'Uranus': True, 'Neptune': True,
-                'Mercury': False, 'Venus': False
-            })
-        ]
+        # Categorize questions by tiers (broad to specific)
+        self.questions = {
+            1: [
+                ("is_gas_giant", "Is it a gas giant?", {
+                    'Jupiter': True, 'Saturn': True, 'Uranus': True, 'Neptune': True,
+                    'Mercury': False, 'Venus': False, 'Earth': False, 'Mars': False
+                }),
+                ("is_inner_planet", "Is it one of the inner planets (closer to the Sun)?", {
+                    'Mercury': True, 'Venus': True, 'Earth': True, 'Mars': True,
+                    'Jupiter': False, 'Saturn': False, 'Uranus': False, 'Neptune': False
+                }),
+            ],
+            2: [
+                ("has_atmosphere", "Does it have a substantial atmosphere?", {
+                    'Venus': True, 'Earth': True, 'Jupiter': True, 'Saturn': True,
+                    'Uranus': True, 'Neptune': True, 'Mars': False, 'Mercury': False
+                }),
+                ("has_rings", "Does it have prominent rings?", {
+                    'Saturn': True, 'Uranus': True, 'Jupiter': True, 'Neptune': True,
+                    'Mercury': False, 'Venus': False, 'Earth': False, 'Mars': False
+                }),
+            ],
+            3: [
+                ("is_habitable", "Is it potentially habitable or known to harbor life?", {
+                    'Earth': True,
+                    'Mercury': False, 'Venus': False, 'Mars': False,
+                    'Jupiter': False, 'Saturn': False, 'Uranus': False, 'Neptune': False
+                }),
+                ("extreme_temp", "Is it known for extreme temperatures?", {
+                    'Mercury': True, 'Venus': True,
+                    'Earth': False, 'Mars': False, 'Jupiter': False,
+                    'Saturn': False, 'Uranus': False, 'Neptune': False
+                }),
+                ("has_moons", "Does it have significant moons?", {
+                    'Earth': True, 'Mars': True, 'Jupiter': True, 'Saturn': True,
+                    'Uranus': True, 'Neptune': True,
+                    'Mercury': False, 'Venus': False
+                }),
+            ]
+        }
+        self.current_tier = 1
         self.asked_questions = set()
 
     def calculate_entropy(self, probabilities: List[float]) -> float:
@@ -52,8 +58,8 @@ class SolarSystemExpert(KnowledgeEngine):
 
     def compute_question_entropy(self, feature_map: Dict[str, bool]) -> float:
         """Calculate the expected entropy of a question based on planet probabilities."""
-        true_group = []  # Probabilities of planets answering True
-        false_group = []  # Probabilities of planets answering False
+        true_group = []
+        false_group = []
 
         for planet, probability in self.possible_planets.items():
             if feature_map[planet]:
@@ -61,7 +67,6 @@ class SolarSystemExpert(KnowledgeEngine):
             else:
                 false_group.append(probability)
 
-        # Normalize groups
         total = sum(true_group) + sum(false_group)
         if total > 0:
             true_prob = sum(true_group) / total
@@ -69,19 +74,25 @@ class SolarSystemExpert(KnowledgeEngine):
         else:
             true_prob = false_prob = 0
 
-        # Calculate weighted entropy
         entropy_true = self.calculate_entropy(true_group)
         entropy_false = self.calculate_entropy(false_group)
 
         return true_prob * entropy_true + false_prob * entropy_false
 
     def ask_question(self) -> Optional[tuple]:
-        """Select the next most informative question to ask based on entropy."""
-        remaining_questions = [q for q in self.questions if q[0] not in self.asked_questions]
+        """Select the next most informative question, prioritizing current tier."""
+        remaining_questions = [
+            q for q in self.questions[self.current_tier] if q[0] not in self.asked_questions
+            ]
+    
         if not remaining_questions:
-            return None
+            # Move to the next tier only if the current tier is exhausted
+            self.current_tier += 1
+            if self.current_tier > max(self.questions.keys()):
+                return None  # No questions left to ask
+            return self.ask_question()
 
-        # Calculate entropy for each question
+        # Calculate entropy for each remaining question in the current tier
         question_entropies = []
         for question_id, question_text, feature_map in remaining_questions:
             entropy = self.compute_question_entropy(feature_map)
@@ -91,6 +102,7 @@ class SolarSystemExpert(KnowledgeEngine):
         _, best_question = min(question_entropies, key=lambda x: x[0])
         return best_question
 
+
     def update_probabilities(self, question_id: str, answer: bool, feature_map: Dict[str, bool]):
         """Update planet probabilities based on the user's answer."""
         for planet, probability in self.possible_planets.items():
@@ -99,7 +111,6 @@ class SolarSystemExpert(KnowledgeEngine):
             else:
                 self.possible_planets[planet] *= 0.1
 
-        # Normalize probabilities
         total = sum(self.possible_planets.values())
         if total > 0:
             for planet in self.possible_planets:
@@ -115,7 +126,6 @@ class SolarSystemExpert(KnowledgeEngine):
         print("Please answer with 'yes' or 'no'.\n")
 
         while True:
-            # Get the most likely planet if probability is high enough
             max_prob = max(self.possible_planets.values())
             if max_prob > 0.8:
                 guess = self.get_most_likely_planet()
@@ -125,14 +135,11 @@ class SolarSystemExpert(KnowledgeEngine):
                     print("Great! I guessed it!")
                     return
                 else:
-                    # Reduce probability for wrong guess
                     self.possible_planets[guess] *= 0.1
                     continue
 
-            # Ask next question
             next_question = self.ask_question()
             if not next_question:
-                # If no more questions, make a final guess
                 guess = self.get_most_likely_planet()
                 print(f"\nI'm not entirely sure, but is it {guess}?")
                 return
@@ -141,7 +148,6 @@ class SolarSystemExpert(KnowledgeEngine):
             print(f"\n{question_text}")
             answer = input().lower().strip()
 
-            # Update probabilities based on answer
             self.update_probabilities(
                 question_id,
                 answer.startswith('y'),
