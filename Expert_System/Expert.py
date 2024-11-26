@@ -1,37 +1,21 @@
-from experta import KnowledgeEngine
-from typing import Dict, List, Optional
-import math
-import random
-from facts import (
-    Sun, Mercury, Venus, Earth, Mars, 
-    Jupiter, Saturn, Uranus, Neptune
-)
-
-class SolarSystemExpert(KnowledgeEngine):
+class PlanetGuessingExpert:
     def __init__(self):
-        super().__init__()
-        # Initialize probabilities equally
+        # More balanced initial approach
         self.possible_planets = {
-            'Mercury': 0.125, 
-            'Venus': 0.125, 
-            'Earth': 0.125, 
-            'Mars': 0.125, 
-            'Jupiter': 0.125, 
-            'Saturn': 0.125, 
-            'Uranus': 0.125, 
-            'Neptune': 0.125
+            'Mercury': 1/8, 'Venus': 1/8, 'Earth': 1/8, 'Mars': 1/8, 
+            'Jupiter': 1/8, 'Saturn': 1/8, 'Uranus': 1/8, 'Neptune': 1/8
         }
         
-        # Hierarchical questions organized by tiers
+        # Reorganize questions to start with the MOST BROAD and DISTINGUISHING questions
         self.questions = {
-            1: [  # Broadest, most distinguishing questions
-                ("is_gas_giant", "Is it a gas giant?", {
-                    'Jupiter': True, 'Saturn': True, 'Uranus': True, 'Neptune': True,
-                    'Mercury': False, 'Venus': False, 'Earth': False, 'Mars': False
-                }),
+            1: [  # MOST BROAD distinguishing questions
                 ("is_inner_planet", "Is it one of the inner planets (closer to the Sun)?", {
                     'Mercury': True, 'Venus': True, 'Earth': True, 'Mars': True,
                     'Jupiter': False, 'Saturn': False, 'Uranus': False, 'Neptune': False
+                }),
+                ("is_gas_giant", "Is it a gas giant?", {
+                    'Jupiter': True, 'Saturn': True, 'Uranus': True, 'Neptune': True,
+                    'Mercury': False, 'Venus': False, 'Earth': False, 'Mars': False
                 }),
             ],
             2: [  # More specific questions
@@ -50,11 +34,6 @@ class SolarSystemExpert(KnowledgeEngine):
                     'Mercury': False, 'Venus': False, 'Mars': False,
                     'Jupiter': False, 'Saturn': False, 'Uranus': False, 'Neptune': False
                 }),
-                ("extreme_temp", "Is it known for extreme temperatures?", {
-                    'Mercury': True, 'Venus': True,
-                    'Earth': False, 'Mars': False, 'Jupiter': False,
-                    'Saturn': False, 'Uranus': False, 'Neptune': False
-                }),
                 ("has_moons", "Does it have significant moons?", {
                     'Earth': True, 'Mars': True, 'Jupiter': True, 'Saturn': True,
                     'Uranus': True, 'Neptune': True,
@@ -63,47 +42,24 @@ class SolarSystemExpert(KnowledgeEngine):
             ]
         }
         
-        # Tracking question-asking process
         self.current_tier = 1
         self.asked_questions = set()
-        
-    def calculate_entropy(self, probabilities: List[float]) -> float:
-        """Calculate entropy from a list of probabilities."""
-        return -sum(p * math.log2(p) for p in probabilities if p > 0)
     
-    def compute_question_information_gain(self, feature_map: Dict[str, bool]) -> float:
+    def select_initial_question(self):
         """
-        Calculate the information gain of a question.
-        Higher value means the question is more informative.
+        Strategically select the first, most broad question
         """
-        true_planets = []
-        false_planets = []
-        
-        for planet, probability in self.possible_planets.items():
-            if feature_map[planet]:
-                true_planets.append(probability)
-            else:
-                false_planets.append(probability)
-        
-        total_prob = sum(true_planets) + sum(false_planets)
-        
-        # If no probabilities, return 0
-        if total_prob == 0:
-            return 0
-        
-        # Compute probabilities of true and false groups
-        true_prob = sum(true_planets) / total_prob
-        false_prob = sum(false_planets) / total_prob
-        
-        # Information gain is highest when probabilities are close to 0.5
-        # This means the question divides the possibilities most evenly
-        return 1 - abs(true_prob - 0.5) * 2
+        # Start with the most distinguishing broad questions
+        return self.questions[1][0]
     
-    def ask_question(self) -> Optional[tuple]:
+    def ask_question(self):
         """
-        Intelligently select the next most informative question.
-        Prioritizes current tier and selects based on information gain.
+        Intelligently select the next most informative question
         """
+        # If no questions have been asked yet, start with the broadest question
+        if not self.asked_questions:
+            return self.select_initial_question()
+        
         # Get unasked questions from current tier
         remaining_questions = [
             q for q in self.questions[self.current_tier] 
@@ -133,62 +89,79 @@ class SolarSystemExpert(KnowledgeEngine):
         
         return None
     
-    def update_probabilities(self, question_id: str, answer: bool, feature_map: Dict[str, bool]):
-        """Update planet probabilities based on the user's answer."""
-        for planet, probability in self.possible_planets.items():
-            if feature_map[planet] == answer:
-                # Reduce probability for planets that match the answer
-                self.possible_planets[planet] *= 0.9
-            else:
-                # Significantly reduce probability for non-matching planets
-                self.possible_planets[planet] *= 0.1
+    def compute_question_information_gain(self, feature_map):
+        """
+        Calculate information gain that favors questions 
+        that most effectively divide the search space
+        """
+        # Count how many planets would answer 'yes' and 'no'
+        yes_planets = sum(1 for planet, val in feature_map.items() if val)
+        no_planets = sum(1 for planet, val in feature_map.items() if not val)
         
-        # Normalize probabilities
-        total = sum(self.possible_planets.values())
-        if total > 0:
-            for planet in self.possible_planets:
-                self.possible_planets[planet] /= total
+        # Prefer questions that divide the planets most evenly
+        balance_score = 1 - abs(yes_planets - no_planets) / len(feature_map)
+        
+        return balance_score
     
-    def get_most_likely_planet(self) -> str:
-        """Return the planet with the highest probability."""
-        return max(self.possible_planets.items(), key=lambda x: x[1])[0]
-    
-    def play_game(self):
-        """Main game loop for the planet guessing game."""
-        print("Think of a planet in our solar system, and I'll try to guess it!")
-        print("Please answer with 'yes' or 'no'.\n")
+    def update_probabilities(self, question, answer):
+        """
+        Update planet probabilities based on the question and answer
+        """
+        for planet in list(self.possible_planets.keys()):
+            # If the answer matches the planet's feature, keep the planet
+            # If not, remove or significantly reduce its probability
+            if question[2][planet] == (answer.lower() == 'yes'):
+                # Increase probability slightly
+                self.possible_planets[planet] *= 1.5
+            else:
+                # Dramatically reduce or remove probability
+                del self.possible_planets[planet]
+        
+        # Normalize remaining probabilities
+        if self.possible_planets:
+            total = sum(self.possible_planets.values())
+            self.possible_planets = {p: prob/total for p, prob in self.possible_planets.items()}
+        
+        return self.possible_planets
 
-        while True:
-            # Get the most likely planet if probability is high enough
-            max_prob = max(self.possible_planets.values())
-            if max_prob > 0.8:
-                guess = self.get_most_likely_planet()
-                print(f"\nI think it's {guess}! Am I right? (yes/no)")
-                answer = input().lower().strip()
-                if answer.startswith('y'):
-                    print("Great! I guessed it!")
-                    return
+# Main game logic
+def play_planet_guessing_game():
+    expert = PlanetGuessingExpert()
+    
+    print("Think of a planet in our solar system, and I'll try to guess it!")
+    print("Please answer with 'yes' or 'no'.")
+    
+    while True:
+        # Select and ask the next question
+        current_question = expert.ask_question()
+        
+        # If no more questions, attempt to guess
+        if current_question is None:
+            if len(expert.possible_planets) == 1:
+                planet = list(expert.possible_planets.keys())[0]
+                print(f"Is it {planet}? (yes/no)")
+                answer = input().lower()
+                if answer == 'yes':
+                    print("I guessed the planet!")
+                    break
                 else:
-                    # Reduce probability for wrong guess
-                    self.possible_planets[guess] *= 0.1
-                    continue
+                    print("I'm out of questions and guesses!")
+                    break
+            else:
+                print("I'm having trouble narrowing down the planet!")
+                break
+        
+        # Ask the selected question
+        print(current_question[1])
+        answer = input().lower()
+        
+        # Update the asked questions and probabilities
+        expert.asked_questions.add(current_question[0])
+        expert.update_probabilities(current_question, answer)
+        
+        # Debug: Print remaining possible planets
+        print("Possible planets:", list(expert.possible_planets.keys()))
 
-            # Ask next question
-            next_question = self.ask_question()
-            if not next_question:
-                # If no more questions, make a final guess
-                guess = self.get_most_likely_planet()
-                print(f"\nI'm not entirely sure, but is it {guess}?")
-                return
-
-            question_id, question_text, feature_map = next_question
-            print(f"\n{question_text}")
-            answer = input().lower().strip()
-            
-            # Update probabilities based on answer
-            self.update_probabilities(
-                question_id,
-                answer.startswith('y'),
-                feature_map
-            )
-            self.asked_questions.add(question_id)
+# Run the game
+if __name__ == "__main__":
+    play_planet_guessing_game()
