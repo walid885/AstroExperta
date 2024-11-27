@@ -135,7 +135,7 @@ class SolarSystemExpert(KnowledgeEngine):
     def play_game(self):
         """Main game loop for the planet guessing game."""
         print("Think of a planet in our solar system, and I'll try to guess it!")
-        print("Please answer with 'yes' or 'no'.\n")
+        print("Please answer with either y (yes) or n (no).\n")
 
         while True:
             max_prob = max(self.possible_planets.values())
@@ -143,16 +143,19 @@ class SolarSystemExpert(KnowledgeEngine):
             if max_prob > 0.8:
                 guess = self.get_most_likely_planet()
                 
-                print(f"\nI think it's {guess}! Am I right? (yes/no)")
+                print(f"\nI think it's {guess}! Am I right? (y/n)")
                 
                 answer = input().lower().strip()
                 
                 if answer.startswith('y'):
                     print("Great! I guessed it!")
                     return
-                else:
+                elif answer.startswith('n'):
                     # Reduce probability for wrong guess
                     self.possible_planets[guess] *= 0.5
+                    continue
+                else:
+                    print("Please respond with y or n.")
                     continue
 
             next_question = self.ask_question()
@@ -160,24 +163,34 @@ class SolarSystemExpert(KnowledgeEngine):
             if not next_question:
                 guess = self.get_most_likely_planet()
                 
-                print(f"\nI'm not entirely sure; but is it {guess}?")
+                print(f"\nI'm not entirely sure; but is it {guess}? (y/n)")
                 
-                return
+                answer = input().lower().strip()
+                
+                if answer.startswith('y'):
+                    print("Great! I guessed it!")
+                    return
+                elif answer.startswith('n'):
+                    print("Thanks for playing!")
+                    return
+                else:
+                    print("Please respond with y or n.")
+                    continue
 
             question_id, question_text, feature_map = next_question
             
-            print(f"\n{question_text}")
+            print(f"\n{question_text} (y/n)")
             
             answer = input().lower().strip()
             
-            if answer not in ['yes', 'no']:
-                print("Please answer with either yes or no.")
+            if answer not in ['y', 'n']:
+                print("Please answer with either y or n.")
                 continue
             
             # Update probabilities based on user response
             self.update_probabilities(
                 question_id,
-                answer == "yes",
+                answer == "y",
                 feature_map
             )
             
