@@ -9,6 +9,7 @@ class SolarSystemExpert(KnowledgeEngine):
             'Jupiter': 1.0 / 8, 'Saturn': 1.0 / 8, 'Uranus': 1.0 / 8, 'Neptune': 1.0 / 8
         }
         self.questions = [
+            # Original characteristics
             ("is_gas_giant", "Is it a gas giant?", {
                 'Jupiter': True, 'Saturn': True, 'Uranus': True, 'Neptune': True,
                 'Mercury': False, 'Venus': False, 'Earth': False, 'Mars': False
@@ -55,11 +56,49 @@ class SolarSystemExpert(KnowledgeEngine):
                 'Neptune': True,
                 'Mercury': False,
                 'Venus': False
+            }),
+            
+            # New distinguishing characteristics
+            ("closest_to_sun", "Is it the closest planet to the Sun?", {
+                'Mercury': True,
+                'Venus': False, 'Earth': False, 'Mars': False,
+                'Jupiter': False, 'Saturn': False, 'Uranus': False, 'Neptune': False
+            }),
+            ("toxic_atmosphere", "Is it known for a thick, toxic atmosphere?", {
+                'Venus': True,
+                'Mercury': False, 'Earth': False, 'Mars': False,
+                'Jupiter': False, 'Saturn': False, 'Uranus': False, 'Neptune': False
+            }),
+            ("reddish_appearance", "Does it have a reddish appearance?", {
+                'Mars': True,
+                'Mercury': False, 'Venus': False, 'Earth': False,
+                'Jupiter': False, 'Saturn': False, 'Uranus': False, 'Neptune': False
+            }),
+            ("largest_planet", "Is it the largest planet in the solar system?", {
+                'Jupiter': True,
+                'Mercury': False, 'Venus': False, 'Earth': False, 'Mars': False,
+                'Saturn': False, 'Uranus': False, 'Neptune': False
+            }),
+            ("distinctive_rings", "Is it known for its distinctive ring system?", {
+                'Saturn': True,
+                'Mercury': False, 'Venus': False, 'Earth': False, 'Mars': False,
+                'Jupiter': False, 'Uranus': False, 'Neptune': False
+            }),
+            ("sideways_rotation", "Does it rotate on its side?", {
+                'Uranus': True,
+                'Mercury': False, 'Venus': False, 'Earth': False, 'Mars': False,
+                'Jupiter': False, 'Saturn': False, 'Neptune': False
+            }),
+            ("windiest_planet", "Is it the windiest planet?", {
+                'Neptune': True,
+                'Mercury': False, 'Venus': False, 'Earth': False, 'Mars': False,
+                'Jupiter': False, 'Saturn': False, 'Uranus': False
             })
         ]
+        
         self.asked_questions = set()
         self.question_count = 0
-
+        
     def update_probabilities(self, question_id: str, answer: bool, feature_map: Dict[str, bool]):
         """Update planet probabilities based on the user's answer."""
         self.update_probabilities_based_on_answer(answer, feature_map)
