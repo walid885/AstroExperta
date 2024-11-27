@@ -1,174 +1,194 @@
-from experta import Rule, KnowledgeEngine, P
-from facts import Sun, Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune
+from experta import KnowledgeEngine
+from typing import Dict, Optional
 
-class SunRules(KnowledgeEngine):
-    """Rules specific to the Sun."""
+class SolarSystemExpert(KnowledgeEngine):
+    def __init__(self):
+        super().__init__()
+        self.possible_planets = {
+            'Mercury': 1.0 / 8, 'Venus': 1.0 / 8, 'Earth': 1.0 / 8, 'Mars': 1.0 / 8,
+            'Jupiter': 1.0 / 8, 'Saturn': 1.0 / 8, 'Uranus': 1.0 / 8, 'Neptune': 1.0 / 8
+        }
+        self.questions = [
+            ("is_gas_giant", "Is it a gas giant?", {
+                'Jupiter': True, 'Saturn': True, 'Uranus': True, 'Neptune': True,
+                'Mercury': False, 'Venus': False, 'Earth': False, 'Mars': False
+            }),
+            ("has_rings", "Does it have prominent rings?", {
+                'Saturn': True, 'Uranus': True, 'Jupiter': True, 'Neptune': True,
+                'Mercury': False, 'Venus': False, 'Earth': False, 'Mars': False
+            }),
+            ("is_inner_planet", "Is it one of the inner planets (closer to the Sun)?", {
+                'Mercury': True, 'Venus': True, 'Earth': True, 'Mars': True,
+                'Jupiter': False, 'Saturn': False, 'Uranus': False, 'Neptune': False
+            }),
+            ("has_atmosphere", "Does it have a substantial atmosphere?", {
+                'Venus': True, 'Earth': True,
+                'Jupiter': True, 'Saturn': True,
+                'Uranus': True, 'Neptune': True,
+                'Mars': False, 'Mercury': False
+            }),
+            ("is_habitable", "Is it potentially habitable or known to harbor life?", {
+                'Earth': True,
+                'Mercury': False, 'Venus': False,
+                'Mars': False,
+                'Jupiter': False,
+                'Saturn': False,
+                'Uranus': False,
+                'Neptune': False
+            }),
+            ("extreme_temp", "Is it known for extreme temperatures?", {
+                'Mercury': True,
+                'Venus': True,
+                'Earth': False,
+                'Mars': False,
+                'Jupiter': False,
+                'Saturn': False,
+                'Uranus': False,
+                'Neptune': False
+            }),
+            ("has_moons", "Does it have significant moons?", {
+                'Earth': True,
+                'Mars': True,
+                'Jupiter': True,
+                'Saturn': True,
+                'Uranus': True,
+                'Neptune': True,
+                'Mercury': False,
+                'Venus': False
+            })
+        ]
+        self.asked_questions = set()
 
-    @Rule(Sun(type="G-type main-sequence star"))
-    def identify_star_type(self):
-        """Identify the type of star."""
-        print("The Sun is a G-type main-sequence star, commonly called a yellow dwarf.")
-    
-    @Rule(Sun(core_temperature=P(lambda temp: temp > 10000000)))
-    def performs_nuclear_fusion(self):
-        """Identify the Sun's core temperature and nuclear fusion process."""
-        print("The Sun performs nuclear fusion in its core, converting hydrogen into helium.")
-    
-    @Rule(Sun(surface_temperature=P(lambda temp: 5000 <= temp <= 6000)))
-    def classify_as_yellow_dwarf(self):
-        """Classify the Sun as a yellow dwarf based on surface temperature."""
-        print("The Sun is classified as a yellow dwarf star based on its surface temperature.")
-    
-    @Rule(Sun(mass="99.8% of Solar System mass"))
-    def describe_mass(self):
-        """Describe the mass of the Sun."""
-        print("The Sun holds 99.8% of the total mass of the Solar System.")
+    def update_probabilities(self, question_id: str, answer: bool, feature_map: Dict[str, bool]):
+        """Update planet probabilities based on the user's answer."""
+        if answer:  # If the answer is yes
+            self.boost_probabilities(feature_map)
+        else:  # If the answer is no
+            self.reduce_probabilities(feature_map)
 
-    @Rule(Sun(solar_cycle="11 years"))
-    def explain_solar_activity(self):
-        """Explain the Sun's solar activity cycle."""
-        print("The Sun experiences an 11-year solar activity cycle with sunspots and flares.")
+        # Normalize probabilities after adjustments
+        total = sum(self.possible_planets.values())
+        
+        # Print updated probabilities elegantly
+        print("\nUpdated Probabilities:")
+        
+        if total > 0:
+            for planet in self.possible_planets:
+                self.possible_planets[planet] /= total
+                print(f"{planet}: {self.possible_planets[planet]:.4f}")
+        else:
+            print("All planet probabilities have been eliminated.")
 
-class MercuryRules(KnowledgeEngine):
-    """Rules specific to Mercury."""
+    def boost_probabilities(self, feature_map: Dict[str, bool]):
+        """Boost probabilities for planets that match the feature map."""
+        for planet in self.possible_planets.keys():
+            if feature_map[planet]:  # If this planet has the attribute set to true
+                self.possible_planets[planet] *= 1.5  # Increase probability by a factor
 
-    @Rule(Mercury(type="Terrestrial planet"))
-    def identify_planet_type(self):
-        """Identify Mercury as a terrestrial planet."""
-        print("Mercury is a terrestrial planet.")
-    
-    @Rule(Mercury(orbital_period="88 days"))
-    def describe_orbital_period(self):
-        """Describe Mercury's orbital period."""
-        print("Mercury orbits the Sun in 88 days.")
-    
-    @Rule(Mercury(unique_features="Closest planet to the Sun"))
-    def unique_features(self):
-        """Highlight Mercury's unique features."""
-        print("Mercury is the closest planet to the Sun.")
+    def reduce_probabilities(self, feature_map: Dict[str, bool]):
+        """Reduce probabilities of planets that do not match the feature map."""
+        for planet in self.possible_planets.keys():
+            if feature_map[planet]:  # If this planet has the attribute set to true
+                continue  # Do not change this planet's probability
+            else:
+                self.possible_planets[planet] = 0  # Set probability to zero for non-matching planets
 
-class VenusRules(KnowledgeEngine):
-    """Rules specific to Venus."""
+    def calculate_entropy(self, probabilities: Dict[str, float]) -> float:
+        """Calculate the entropy of a probability distribution."""
+        from math import log2
+        return -sum(p * log2(p) for p in probabilities.values() if p > 0)
 
-    @Rule(Venus(type="Terrestrial planet"))
-    def identify_planet_type(self):
-        """Identify Venus as a terrestrial planet."""
-        print("Venus is a terrestrial planet.")
-    
-    @Rule(Venus(surface_temperature=P(lambda temp: temp > 400)))
-    def extreme_heat(self):
-        """Highlight Venus's extreme surface temperature."""
-        print("Venus is the hottest planet in the Solar System, with surface temperatures around 465°C.")
-    
-    @Rule(Venus(atmosphere="Thick atmosphere composed mostly of carbon dioxide"))
-    def thick_atmosphere(self):
-        """Describe Venus's thick atmosphere."""
-        print("Venus has a thick atmosphere composed mostly of carbon dioxide, creating intense greenhouse effects.")
+    def ask_question(self) -> Optional[tuple]:
+        """Select the next most informative question to ask."""
+        remaining_questions = [q for q in self.questions if q[0] not in self.asked_questions]
+        
+        if not remaining_questions:
+            return None
 
-class EarthRules(KnowledgeEngine):
-    """Rules specific to Earth."""
+        question_gains = [(self.calculate_information_gain(q), q) for q in remaining_questions]
+        
+        best_question = max(question_gains, key=lambda x: x[0])[1]
+        
+        return best_question
 
-    @Rule(Earth(type="Terrestrial planet"))
-    def identify_planet_type(self):
-        """Identify Earth as a terrestrial planet."""
-        print("Earth is a terrestrial planet.")
-    
-    @Rule(Earth(surface_temperature=P(lambda temp: temp > 0)))
-    def moderate_temperature(self):
-        """Describe Earth's moderate surface temperature."""
-        print("Earth has a moderate surface temperature, averaging around 15°C.")
-    
-    @Rule(Earth(atmosphere="Mostly nitrogen and oxygen"))
-    def life_supporting_atmosphere(self):
-        """Describe Earth's life-supporting atmosphere."""
-        print("Earth has an atmosphere mostly composed of nitrogen and oxygen, supporting life.")
-    
-    @Rule(Earth(orbital_period="365.25 days"))
-    def describe_orbital_period(self):
-        """Describe Earth's orbital period."""
-        print("Earth orbits the Sun in 365.25 days.")
-    
-    @Rule(Earth(unique_features="Contains liquid water, supports life"))
-    def unique_features(self):
-        """Highlight Earth's unique features."""
-        print("Earth contains liquid water and supports life.")
+    def calculate_information_gain(self, question: tuple) -> float:
+        """Calculate information gain for a given question."""
+        feature_map = question[2]
+        total_entropy = self.calculate_entropy(self.possible_planets)
+        
+        yes_probs = {planet: self.possible_planets[planet] for planet in feature_map if feature_map[planet]}
+        no_probs = {planet: self.possible_planets[planet] for planet in feature_map if not feature_map[planet]}
+        
+        yes_entropy = self.calculate_entropy(yes_probs)
+        no_entropy = self.calculate_entropy(no_probs)
 
-class MarsRules(KnowledgeEngine):
-    """Rules specific to Mars."""
+        total_possible = sum(self.possible_planets.values())
+        
+        if total_possible == 0:
+            return 0
 
-    @Rule(Mars(type="Terrestrial planet"))
-    def identify_planet_type(self):
-        """Identify Mars as a terrestrial planet."""
-        print("Mars is a terrestrial planet.")
-    
-    @Rule(Mars(surface_temperature=P(lambda temp: temp < 0)))
-    def cold_temperature(self):
-        """Describe Mars's cold surface temperature."""
-        print("Mars has a cold surface temperature, ranging from −87 to −5°C.")
-    
-    @Rule(Mars(atmosphere="Thin atmosphere composed mostly of carbon dioxide"))
-    def thin_atmosphere(self):
-        """Describe Mars's thin atmosphere."""
-        print("Mars has a thin atmosphere composed mostly of carbon dioxide.")
-    
-    @Rule(Mars(unique_features="Known as the Red Planet"))
-    def unique_features(self):
-        """Highlight Mars's unique features."""
-        print("Mars is known as the Red Planet due to its reddish appearance caused by iron oxide on its surface.")
+        weight_yes = sum(yes_probs.values()) / total_possible
+        weight_no = sum(no_probs.values()) / total_possible
+        
+        information_gain = total_entropy - (weight_yes * yes_entropy + weight_no * no_entropy)
+        
+        return information_gain
 
-class JupiterRules(KnowledgeEngine):
-    """Rules specific to Jupiter."""
+    def get_most_likely_planet(self) -> str:
+        """Return the planet with the highest probability."""
+        return max(self.possible_planets.items(), key=lambda x: x[1])[0]
 
-    @Rule(Jupiter(type="Gas giant"))
-    def identify_planet_type(self):
-        """Identify Jupiter as a gas giant."""
-        print("Jupiter is a gas giant.")
-    
-    @Rule(Jupiter(mass=P(lambda mass: mass > 1.8e27)))
-    def massive_size(self):
-        """Describe Jupiter's massive size."""
-        print("Jupiter is the largest planet in the Solar System.")
-    
-    @Rule(Jupiter(atmosphere="Thick atmosphere composed mostly of hydrogen and helium"))
-    def thick_atmosphere(self):
-        """Describe Jupiter's thick atmosphere."""
-        print("Jupiter has a thick atmosphere composed mostly of hydrogen and helium.")
+    def play_game(self):
+        """Main game loop for the planet guessing game."""
+        print("Think of a planet in our solar system, and I'll try to guess it!")
+        print("Please answer with 'yes' or 'no'.\n")
 
-class SaturnRules(KnowledgeEngine):
-    """Rules specific to Saturn."""
+        while True:
+            max_prob = max(self.possible_planets.values())
+            
+            if max_prob > 0.8:
+                guess = self.get_most_likely_planet()
+                
+                print(f"\nI think it's {guess}! Am I right? (yes/no)")
+                
+                answer = input().lower().strip()
+                
+                if answer.startswith('y'):
+                    print("Great! I guessed it!")
+                    return
+                else:
+                    # Reduce probability for wrong guess
+                    self.possible_planets[guess] *= 0.5
+                    continue
 
-    @Rule(Saturn(type="Gas giant"))
-    def identify_planet_type(self):
-        """Identify Saturn as a gas giant."""
-        print("Saturn is a gas giant.")
-    
-    @Rule(Saturn(unique_features="Famous for its prominent ring system"))
-    def ring_system(self):
-        """Describe Saturn's ring system."""
-        print("Saturn is famous for its prominent ring system, composed of ice and rock.")
+            next_question = self.ask_question()
+            
+            if not next_question:
+                guess = self.get_most_likely_planet()
+                
+                print(f"\nI'm not entirely sure; but is it {guess}?")
+                
+                return
 
-class UranusRules(KnowledgeEngine):
-    """Rules specific to Uranus."""
+            question_id, question_text, feature_map = next_question
+            
+            print(f"\n{question_text}")
+            
+            answer = input().lower().strip()
+            
+            if answer not in ['yes', 'no']:
+                print("Please answer with either yes or no.")
+                continue
+            
+            # Update probabilities based on user response
+            self.update_probabilities(
+                question_id,
+                answer == "yes",
+                feature_map
+            )
+            
+            self.asked_questions.add(question_id)
 
-    @Rule(Uranus(type="Ice giant"))
-    def identify_planet_type(self):
-        """Identify Uranus as an ice giant."""
-        print("Uranus is an ice giant.")
-    
-    @Rule(Uranus(unique_features="Rotates on its side"))
-    def unique_rotation(self):
-        """Highlight Uranus's unique rotation."""
-        print("Uranus rotates on its side, making it unique among the planets in the Solar System.")
-
-class NeptuneRules(KnowledgeEngine):
-    """Rules specific to Neptune."""
-
-    @Rule(Neptune(type="Ice giant"))
-    def identify_planet_type(self):
-        """Identify Neptune as an ice giant."""
-        print("Neptune is an ice giant.")
-    
-    @Rule(Neptune(unique_features="Strongest winds in the Solar System"))
-    def strong_winds(self):
-        """Describe Neptune's strong winds."""
-        print("Neptune has the strongest winds in the Solar System.")
+if __name__ == "__main__":
+    expert = SolarSystemExpert()
+    expert.play_game()
