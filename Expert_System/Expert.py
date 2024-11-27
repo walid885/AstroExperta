@@ -1,4 +1,4 @@
-from typing import Dict, Optional, List, Tuple
+"""from typing import Dict, Optional, List, Tuple
 import math
 
 class SolarSystemExpert:
@@ -52,10 +52,18 @@ class SolarSystemExpert:
         ]
         self.asked_questions = []
         self.true_questions = []
+    def check_direct_facts(self):
+        """"""Check for directly known facts before asking questions."""
+        """if len([p for p, v in self.possible_planets.items() if p == 'Earth' and v > 0.9]) > 0:
+            print("Earth is the only known planet in our solar system that harbors life.")
+            return True
+        return False
+
+
 
     def update_probabilities(self, question_id: str, answer: bool, feature_map: Dict[str, bool]):
-        """Update planet probabilities based on the user's answer."""
-        eliminated_planets = []
+        """"""Update planet probabilities based on the user's answer."""
+        """eliminated_planets = []
         true_planets = []
 
         for planet in list(self.possible_planets.keys()):
@@ -78,8 +86,8 @@ class SolarSystemExpert:
         print("True Planets:", ", ".join(true_planets))
 
     def track_candidates(self):
-        """Track and print candidate planets based on true questions"""
-        print("\n" + "="*50)
+        """T"""rack and print candidate planets based on true questions"""
+        """print("\n" + "="*50)
         print("CANDIDATE PLANET ANALYSIS")
         print("="*50)
 
@@ -96,8 +104,8 @@ class SolarSystemExpert:
             print(f"{planet}: {prob:.4f}")
 
     def ask_question(self) -> Optional[tuple]:
-        """Select the next most informative question to ask."""
-        remaining_questions = [q for q in self.questions if q[0] not in [aq[0] for aq in self.asked_questions]]
+        """"""Select the next most informative question to ask."""
+        """remaining_questions = [q for q in self.questions if q[0] not in [aq[0] for aq in self.asked_questions]]
         
         if not remaining_questions:
             return None
@@ -105,8 +113,8 @@ class SolarSystemExpert:
         return remaining_questions[0]
 
     def play_game(self):
-        """Main game loop for the planet guessing game."""
-        print("Think of a planet in our solar system, and I'll try to guess it!")
+        """"""Main game loop for the planet guessing game."""
+        """print("Think of a planet in our solar system, and I'll try to guess it!")
         print("Please answer with 'yes' or 'no'.\n")
 
         while True:
@@ -162,4 +170,4 @@ class SolarSystemExpert:
 
 if __name__ == "__main__":
     expert = SolarSystemExpert()
-    expert.play_game()
+    expert.play_game()"""
