@@ -97,6 +97,8 @@ class SolarSystemExpert(KnowledgeEngine):
                 self.possible_planets[planet] /= total
 
 
+
+
     def calculate_entropy(self, probabilities: Dict[str, float]) -> float:
         """Calculate the entropy of a probability distribution."""
         from math import log2
