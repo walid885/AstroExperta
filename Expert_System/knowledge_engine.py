@@ -61,10 +61,7 @@ class SolarSystemExpert(KnowledgeEngine):
 
     def update_probabilities(self, question_id: str, answer: bool, feature_map: Dict[str, bool]):
         """Update planet probabilities based on the user's answer."""
-        if answer:  # If the answer is yes
-            self.boost_probabilities(feature_map)
-        else:  # If the answer is no
-            self.reduce_probabilities(feature_map)
+        self.update_probabilities_based_on_answer(answer, feature_map)
 
         # Normalize probabilities after adjustments
         total = sum(self.possible_planets.values())
@@ -79,19 +76,16 @@ class SolarSystemExpert(KnowledgeEngine):
         else:
             print("All planet probabilities have been eliminated.")
 
-    def boost_probabilities(self, feature_map: Dict[str, bool]):
-        """Boost probabilities for planets that match the feature map."""
-        for planet in self.possible_planets.keys():
-            if feature_map[planet]:  # If this planet has the attribute set to true
-                self.possible_planets[planet] *= 1.5  # Increase probability by a factor
-
-    def reduce_probabilities(self, feature_map: Dict[str, bool]):
-        """Reduce probabilities of planets that do not match the feature map."""
-        for planet in self.possible_planets.keys():
-            if feature_map[planet]:  # If this planet has the attribute set to true
-                continue  # Do not change this planet's probability
-            else:
-                self.possible_planets[planet] = 0  # Set probability to zero for non-matching planets
+    def update_probabilities_based_on_answer(self, answer: bool, feature_map: Dict[str, bool]):
+        """Update probabilities based on the user's answer to a question."""
+        if answer:  # If the answer is yes
+            for planet in self.possible_planets.keys():
+                if feature_map[planet]:  # If this planet has the attribute set to true
+                    self.possible_planets[planet] *= 1.5  # Boost probability
+        else:  # If the answer is no
+            for planet in self.possible_planets.keys():
+                if not feature_map[planet]:  # If this planet does not have the attribute set to true
+                    self.possible_planets[planet] *= 1.5  # Boost probability for planets that do not match
 
     def calculate_entropy(self, probabilities: Dict[str, float]) -> float:
         """Calculate the entropy of a probability distribution."""
