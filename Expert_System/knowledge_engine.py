@@ -79,16 +79,20 @@ class SolarSystemExpert(KnowledgeEngine):
 
     def update_probabilities_based_on_answer(self, answer: bool, feature_map: Dict[str, bool]):
         """Update probabilities based on the user's answer to a question."""
-        adjustment_factor = 1 + (self.question_count * 0.5)  # Increase influence with more questions
         
         if answer:  # If the answer is yes
             for planet in self.possible_planets.keys():
                 if feature_map[planet]:  # If this planet has the attribute set to true
-                    self.possible_planets[planet] *= adjustment_factor  # Boost probability
+                    self.possible_planets[planet] *= 2.0  # Boost probability for true attributes
+                else:
+                    self.possible_planets[planet] = 0.0  # Set false attributes to zero
+
         else:  # If the answer is no
             for planet in self.possible_planets.keys():
                 if not feature_map[planet]:  # If this planet does not have the attribute set to true
-                    self.possible_planets[planet] *= adjustment_factor  # Boost probability for planets that do not match
+                    self.possible_planets[planet] *= 2.0  # Boost probability for false attributes
+                else:
+                    self.possible_planets[planet] = 0.0  # Set true attributes to zero
 
     def calculate_entropy(self, probabilities: Dict[str, float]) -> float:
         """Calculate the entropy of a probability distribution."""
