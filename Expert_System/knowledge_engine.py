@@ -88,8 +88,10 @@ class SolarSystemExpert(KnowledgeEngine):
     def reduce_probabilities(self, feature_map: Dict[str, bool]):
         """Reduce probabilities of planets that do not match the feature map."""
         for planet in self.possible_planets.keys():
-            if not feature_map[planet]:  # If this planet does not have the attribute set to true
-                self.possible_planets[planet] *= 0.5  # Decrease probability by a factor
+            if feature_map[planet]:  # If this planet has the attribute set to true
+                continue  # Do not change this planet's probability
+            else:
+                self.possible_planets[planet] = 0  # Set probability to zero for non-matching planets
 
     def calculate_entropy(self, probabilities: Dict[str, float]) -> float:
         """Calculate the entropy of a probability distribution."""
