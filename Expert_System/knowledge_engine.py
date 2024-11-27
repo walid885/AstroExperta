@@ -59,34 +59,12 @@ class SolarSystemExpert(KnowledgeEngine):
         ]
         self.asked_questions = set()
 
-    def calculate_information_gain(self, question: tuple) -> float:
-        """Calculate the information gain for a given question."""
-        feature_map = question[2]
-        total_entropy = self.calculate_entropy(self.possible_planets)
-        
-        yes_probs = {planet: self.possible_planets[planet] for planet in feature_map if feature_map[planet]}
-        no_probs = {planet: self.possible_planets[planet] for planet in feature_map if not feature_map[planet]}
-        
-        yes_entropy = self.calculate_entropy(yes_probs)
-        no_entropy = self.calculate_entropy(no_probs)
-
-        # Check if total probabilities are zero
-        total_possible = sum(self.possible_planets.values())
-        if total_possible == 0:
-            return 0  # No information gain possible if no planets are left
-
-        weight_yes = sum(yes_probs.values()) / total_possible
-        weight_no = sum(no_probs.values()) / total_possible
-        
-        information_gain = total_entropy - (weight_yes * yes_entropy + weight_no * no_entropy)
-        return information_gain
-
     def update_probabilities(self, question_id: str, answer: bool, feature_map: Dict[str, bool]):
         """Update planet probabilities based on the user's answer."""
         if answer:  # If the answer is yes
             self.boost_probabilities(feature_map)
         else:  # If the answer is no
-            self.reduce_probabilities()
+            self.reduce_probabilities(feature_map)
 
         # Normalize probabilities after adjustments
         total = sum(self.possible_planets.values())
@@ -104,14 +82,14 @@ class SolarSystemExpert(KnowledgeEngine):
     def boost_probabilities(self, feature_map: Dict[str, bool]):
         """Boost probabilities for planets that match the feature map."""
         for planet in self.possible_planets.keys():
-            if feature_map[planet]:
-                self.possible_planets[planet] *= 10  # Boosting factor
+            if feature_map[planet]:  # If this planet has the attribute set to true
+                self.possible_planets[planet] *= 1.5  # Increase probability by a factor
 
-    def reduce_probabilities(self):
-        """Reduce probabilities of all other planets to zero."""
-        for planet in list(self.possible_planets.keys()):
-            if self.possible_planets[planet] > 0:
-                self.possible_planets[planet] *= 0.1  # Reduce by a factor instead of setting to zero
+    def reduce_probabilities(self, feature_map: Dict[str, bool]):
+        """Reduce probabilities of planets that do not match the feature map."""
+        for planet in self.possible_planets.keys():
+            if not feature_map[planet]:  # If this planet does not have the attribute set to true
+                self.possible_planets[planet] *= 0.5  # Decrease probability by a factor
 
     def calculate_entropy(self, probabilities: Dict[str, float]) -> float:
         """Calculate the entropy of a probability distribution."""
@@ -131,6 +109,29 @@ class SolarSystemExpert(KnowledgeEngine):
         
         return best_question
 
+    def calculate_information_gain(self, question: tuple) -> float:
+        """Calculate information gain for a given question."""
+        feature_map = question[2]
+        total_entropy = self.calculate_entropy(self.possible_planets)
+        
+        yes_probs = {planet: self.possible_planets[planet] for planet in feature_map if feature_map[planet]}
+        no_probs = {planet: self.possible_planets[planet] for planet in feature_map if not feature_map[planet]}
+        
+        yes_entropy = self.calculate_entropy(yes_probs)
+        no_entropy = self.calculate_entropy(no_probs)
+
+        total_possible = sum(self.possible_planets.values())
+        
+        if total_possible == 0:
+            return 0
+
+        weight_yes = sum(yes_probs.values()) / total_possible
+        weight_no = sum(no_probs.values()) / total_possible
+        
+        information_gain = total_entropy - (weight_yes * yes_entropy + weight_no * no_entropy)
+        
+        return information_gain
+
     def get_most_likely_planet(self) -> str:
         """Return the planet with the highest probability."""
         return max(self.possible_planets.items(), key=lambda x: x[1])[0]
@@ -141,7 +142,6 @@ class SolarSystemExpert(KnowledgeEngine):
         print("Please answer with 'yes' or 'no'.\n")
 
         while True:
-            # Get the most likely planet if probability is high enough
             max_prob = max(self.possible_planets.values())
             
             if max_prob > 0.8:
@@ -156,14 +156,12 @@ class SolarSystemExpert(KnowledgeEngine):
                     return
                 else:
                     # Reduce probability for wrong guess
-                    self.possible_planets[guess] *= 0.1
+                    self.possible_planets[guess] *= 0.5
                     continue
 
-            # Ask next question
             next_question = self.ask_question()
             
             if not next_question:
-                # If no more questions remain to ask
                 guess = self.get_most_likely_planet()
                 
                 print(f"\nI'm not entirely sure; but is it {guess}?")
