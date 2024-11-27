@@ -9,96 +9,106 @@ class SolarSystemExpert(KnowledgeEngine):
             'Jupiter': 1.0 / 8, 'Saturn': 1.0 / 8, 'Uranus': 1.0 / 8, 'Neptune': 1.0 / 8
         }
         self.questions = [
-            # Original characteristics
             ("is_gas_giant", "Is it a gas giant?", {
-                'Jupiter': True, 'Saturn': True, 'Uranus': True, 'Neptune': True,
-                'Mercury': False, 'Venus': False, 'Earth': False, 'Mars': False
+                'Jupiter': True,
+                'Saturn': True,
+                'Uranus': True,
+                'Neptune': True,
+                'Mercury': False,
+                'Venus': False,
+                'Earth': False,
+                'Mars': False
             }),
             ("has_rings", "Does it have prominent rings?", {
-                'Saturn': True, 'Uranus': True, 'Jupiter': True, 'Neptune': True,
-                'Mercury': False, 'Venus': False, 'Earth': False, 'Mars': False
+                'Jupiter': True,
+                'Saturn': True,
+                'Uranus': False,  # Uranus has faint rings but not prominent
+                'Neptune': False,  # Neptune has faint rings but not prominent
+                'Mercury': False,
+                'Venus': False,
+                'Earth': False,
+                'Mars': False
             }),
             ("is_inner_planet", "Is it one of the inner planets (closer to the Sun)?", {
-                'Mercury': True, 'Venus': True, 'Earth': True, 'Mars': True,
-                'Jupiter': False, 'Saturn': False, 'Uranus': False, 'Neptune': False
+                'Mercury': True,
+                'Venus': True,
+                'Earth': True,
+                'Mars': True,
+                'Jupiter': False,
+                'Saturn': False,
+                'Uranus': False,
+                'Neptune': False
             }),
             ("has_atmosphere", "Does it have a substantial atmosphere?", {
-                'Venus': True, 'Earth': True,
-                'Jupiter': True, 'Saturn': True,
-                'Uranus': True, 'Neptune': True,
-                'Mars': False, 'Mercury': False
+                'Venus': True,
+                'Earth': True,
+                'Jupiter': True,
+                'Saturn': True,
+                'Uranus': True,
+                'Neptune': True,
+                'Mars': False,
+                'Mercury': False
             }),
             ("is_habitable", "Is it potentially habitable or known to harbor life?", {
                 'Earth': True,
-                'Mercury': False, 'Venus': False,
-                'Mars': False,
+                'Mercury': False,
+                'Venus': False,
+                'Mars': False,  # Mars has potential for past life but is not currently habitable
                 'Jupiter': False,
                 'Saturn': False,
                 'Uranus': False,
                 'Neptune': False
             }),
             ("extreme_temp", "Is it known for extreme temperatures?", {
-                'Mercury': True,
-                'Venus': True,
-                'Earth': False,
-                'Mars': False,
-                'Jupiter': False,
-                'Saturn': False,
-                'Uranus': False,
-                'Neptune': False
+                'Mercury': True,  # Known for extreme temperature fluctuations
+                'Venus': True,     # Extremely high temperatures
+                'Earth': False,    # Moderate temperatures
+                'Mars': True,      # Cold temperatures but not extreme like Venus or Mercury
+                'Jupiter': True,   # Known for storms and extreme conditions
+                'Saturn': False,   # Not particularly extreme compared to others
+                'Uranus': False,   # Has cold temperatures but not extreme in the same sense
+                'Neptune': False    # Similar to Uranus in terms of coldness
             }),
             ("has_moons", "Does it have significant moons?", {
-                'Earth': True,
-                'Mars': True,
-                'Jupiter': True,
-                'Saturn': True,
-                'Uranus': True,
-                'Neptune': True,
-                'Mercury': False,
-                'Venus': False
+                # Correcting the moon information
+                'Earth': True,     # Has 1 significant moon
+                'Mars': True,      # Has 2 small moons (Phobos and Deimos)
+                'Jupiter': True,   # Has many moons (over 79)
+                'Saturn': True,    # Also has many moons (over 80)
+                'Uranus': True,    # Has 27 known moons
+                'Neptune': True,   # Has 14 known moons
+                'Mercury': False,  # No moons
+                'Venus': False      # No moons
             }),
-            
-            # New distinguishing characteristics
-            ("closest_to_sun", "Is it the closest planet to the Sun?", {
-                'Mercury': True,
-                'Venus': False, 'Earth': False, 'Mars': False,
-                'Jupiter': False, 'Saturn': False, 'Uranus': False, 'Neptune': False
+            ("color", "Is it predominantly blue?", {
+            # Only Uranus and Neptune are predominantly blue.
+            # Jupiter and Saturn are not predominantly blue; Earth is not predominantly blue.
+            # Mercury and Venus are also not blue.
+            'Jupiter': False,
+            'Saturn': False,
+            'Uranus': True,   # Predominantly blue due to methane in the atmosphere
+            'Neptune': True,   # Also appears blue for similar reasons
+            # Inner planets are not blue
+            'Mercury': False,
+            'Venus': False,
+            'Earth': False,     # Earth is often depicted as blue due to oceans but not predominantly so in this context.
+            'Mars': False       # Mars is red.
             }),
-            ("toxic_atmosphere", "Is it known for a thick, toxic atmosphere?", {
-                'Venus': True,
-                'Mercury': False, 'Earth': False, 'Mars': False,
-                'Jupiter': False, 'Saturn': False, 'Uranus': False, 'Neptune': False
-            }),
-            ("reddish_appearance", "Does it have a reddish appearance?", {
-                'Mars': True,
-                'Mercury': False, 'Venus': False, 'Earth': False,
-                'Jupiter': False, 'Saturn': False, 'Uranus': False, 'Neptune': False
-            }),
-            ("largest_planet", "Is it the largest planet in the solar system?", {
-                'Jupiter': True,
-                'Mercury': False, 'Venus': False, 'Earth': False, 'Mars': False,
-                'Saturn': False, 'Uranus': False, 'Neptune': False
-            }),
-            ("distinctive_rings", "Is it known for its distinctive ring system?", {
-                'Saturn': True,
-                'Mercury': False, 'Venus': False, 'Earth': False, 'Mars': False,
-                'Jupiter': False, 'Uranus': False, 'Neptune': False
-            }),
-            ("sideways_rotation", "Does it rotate on its side?", {
-                'Uranus': True,
-                'Mercury': False, 'Venus': False, 'Earth': False, 'Mars': False,
-                'Jupiter': False, 'Saturn': False, 'Neptune': False
-            }),
-            ("windiest_planet", "Is it the windiest planet?", {
-                'Neptune': True,
-                'Mercury': False, 'Venus': False, 'Earth': False, 'Mars': False,
-                'Jupiter': False, 'Saturn': False, 'Uranus': False
+            ("has_retrograde_moon", "Does it have a retrograde moon?", {
+            # Triton is the only large retrograde moon in the solar system.
+            # This question helps distinguish Neptune from Uranus.
+            "Jupiter": False,   # No retrograde large moons.
+            "Saturn": False,    # No retrograde large moons.
+            "Uranus": False,    # No significant retrograde moons.
+            "Neptune": True,    # Triton is a retrograde moon.
+            "Mercury": False,   # No moons.
+            "Venus": False,     # No moons.
+            "Earth": False,     # Moon is not retrograde.
+            "Mars": False       # Moons are not retrograde.
             })
         ]
-        
         self.asked_questions = set()
-        self.question_count = 0
-        
+        self.question_count = 0 
     def update_probabilities(self, question_id: str, answer: bool, feature_map: Dict[str, bool]):
         """Update planet probabilities based on the user's answer."""
         self.update_probabilities_based_on_answer(answer, feature_map)
@@ -124,15 +134,16 @@ class SolarSystemExpert(KnowledgeEngine):
                 if feature_map[planet]:  # If this planet has the attribute set to true
                     self.possible_planets[planet] *= 2.0  # Boost probability for true attributes
                 else:
-                    self.possible_planets[planet] = 0.0  # Set false attributes to zero
+                    # Instead of setting to zero, reduce probability by a certain factor
+                    self.possible_planets[planet] *= 0.1  # Reduce but retain some probability
 
         else:  # If the answer is no
             for planet in self.possible_planets.keys():
                 if not feature_map[planet]:  # If this planet does not have the attribute set to true
                     self.possible_planets[planet] *= 2.0  # Boost probability for false attributes
                 else:
-                    self.possible_planets[planet] = 0.0  # Set true attributes to zero
-
+                    # Again reduce but retain some probability
+                    self.possible_planets[planet] *= 0.1  # Reduce but retain some probability
     def calculate_entropy(self, probabilities: Dict[str, float]) -> float:
         """Calculate the entropy of a probability distribution."""
         from math import log2
