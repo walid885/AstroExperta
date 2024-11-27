@@ -22,7 +22,7 @@ class SolarSystemExpert(KnowledgeEngine):
                 'Jupiter': False, 'Saturn': False, 'Uranus': False, 'Neptune': False
             }),
             ("has_atmosphere", "Does it have a substantial atmosphere?", {
-                'Venus': True, 'Earth': True, 
+                'Venus': True, 'Earth': True,
                 'Jupiter': True, 'Saturn': True,
                 'Uranus': True, 'Neptune': True,
                 'Mars': False, 'Mercury': False
@@ -30,14 +30,14 @@ class SolarSystemExpert(KnowledgeEngine):
             ("is_habitable", "Is it potentially habitable or known to harbor life?", {
                 'Earth': True,
                 'Mercury': False, 'Venus': False,
-                'Mars': False, 
+                'Mars': False,
                 'Jupiter': False,
                 'Saturn': False,
                 'Uranus': False,
                 'Neptune': False
             }),
             ("extreme_temp", "Is it known for extreme temperatures?", {
-                'Mercury': True, 
+                'Mercury': True,
                 'Venus': True,
                 'Earth': False,
                 'Mars': False,
@@ -93,10 +93,13 @@ class SolarSystemExpert(KnowledgeEngine):
         
         # Print updated probabilities elegantly
         print("\nUpdated Probabilities:")
-        for planet in self.possible_planets:
-            if total > 0:
+        
+        if total > 0:
+            for planet in self.possible_planets:
                 self.possible_planets[planet] /= total
-            print(f"{planet}: {self.possible_planets[planet]:.4f}")
+                print(f"{planet}: {self.possible_planets[planet]:.4f}")
+        else:
+            print("All planet probabilities have been eliminated.")
 
     def boost_probabilities(self, feature_map: Dict[str, bool]):
         """Boost probabilities for planets that match the feature map."""
@@ -108,7 +111,7 @@ class SolarSystemExpert(KnowledgeEngine):
         """Reduce probabilities of all other planets to zero."""
         for planet in list(self.possible_planets.keys()):
             if self.possible_planets[planet] > 0:
-                self.possible_planets[planet] = 0
+                self.possible_planets[planet] *= 0.1  # Reduce by a factor instead of setting to zero
 
     def calculate_entropy(self, probabilities: Dict[str, float]) -> float:
         """Calculate the entropy of a probability distribution."""
