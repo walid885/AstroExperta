@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
 import tkinter.font as tkFont
-from Expert_System.knlowledge_engineGUIntegr import SolarSystemExpertGUI  # Importing the expert system
+from Expert_System.knlowledge_engineGUIntegr import SolarSystemExpertGUI  # Ensure correct import
 
 class AstronomyExpertSystem:
     def __init__(self, root):
@@ -65,6 +65,15 @@ class AstronomyExpertSystem:
         )
         self.question_label.pack(pady=15)
         
+        # Probability Label
+        self.probability_label = ttk.Label(
+            self.question_frame,
+            text="Current Probabilities: ",
+            style='Question.TLabel',
+            font=("Helvetica", 12)
+        )
+        self.probability_label.pack(pady=10)
+
         # Buttons Frame
         self.buttons_frame = ttk.Frame(self.main_frame, style='Main.TFrame')
         self.buttons_frame.grid(row=2, column=0, columnspan=2, pady=30)
@@ -95,18 +104,7 @@ class AstronomyExpertSystem:
             state="disabled"
         )
         self.no_button.grid(row=0, column=2, padx=10)
-        
-        # Progress Frame (optional if you want to show progress)
-        self.progress_frame = ttk.Frame(self.main_frame, style='Main.TFrame')
-        self.progress_frame.grid(row=3, column=0, columnspan=2, pady=20)
-        
-        self.progress_label = ttk.Label(
-            self.progress_frame,
-            text="Progress: 0%",
-            style='Progress.TLabel'
-        )
-        self.progress_label.pack()
-        
+
     def setup_styles(self):
        """Configure custom styles for the application"""
        style = ttk.Style()
@@ -134,37 +132,52 @@ class AstronomyExpertSystem:
        question = self.expert_system.get_next_question()
        
        if question:
-           question_id, question_text, _ = question  # Unpack question details
+           question_id, question_text, feature_map = question  # Unpack question details including feature map
+           self.current_question_id = question_id  # Store current question ID for later use
+           self.current_feature_map = feature_map  # Store current feature map for later use
+
            self.question_label.config(text=question_text)  # Display question text
            self.start_button.config(state="disabled")  # Disable start button during questioning
            self.yes_button.config(state="normal")  # Enable yes/no buttons
            self.no_button.config(state="normal")
+           self.update_probabilities_display()  # Show initial probabilities
 
     def process_answer(self, answer):
        """Process user answers and update game state."""
-       question_id = ...  # Retrieve current question ID (you may need to store this when fetching questions)
+       print(f"User answered {'Yes' if answer else 'No'}.")
        
-       if answer:
-           response_text = "Great! Let's explore more."
-           print("User answered Yes.")
-       else:
-           response_text = "Interesting! Let's see what else we can find."
-           print("User answered No.")
-       
-       # Update probabilities in expert system based on user answer
-       self.expert_system.process_answer(question_id, answer)
+       # Update probabilities in expert system based on user answer using stored feature map and question ID
+       if hasattr(self, 'current_feature_map'):  # Ensure feature map exists before accessing it
+           feature_map = self.current_feature_map  
+           question_id = self.current_question_id  
+           print(f"Processing answer for question ID: {question_id}")
 
-       next_question = self.expert_system.get_next_question()
-       
-       if next_question:
-           question_id, question_text, _ = next_question  # Unpack next question details
-           self.question_label.config(text=question_text)  # Update label with new question text
-           print(f"Next Question: {question_text}")
-           # Optionally update progress here if needed
+           # Update probabilities based on user response (yes/no)
+           self.expert_system.update_probabilities(question_id, answer, feature_map)
 
-       else:
-           guess = self.expert_system.get_most_likely_planet()  # Get guess from expert system
-           messagebox.showinfo("Guess", f"I think it's {guess}!")  # Display guess message
+           next_question = self.expert_system.get_next_question()
+           
+           if next_question:
+               question_id, question_text, feature_map = next_question  # Unpack next question details including feature map
+               self.current_question_id = question_id  # Update current question ID for next round
+               self.current_feature_map = feature_map  # Update current feature map for next round
+
+               self.question_label.config(text=question_text)  # Update label with new question text
+
+           else:
+               guess = self.expert_system.get_most_likely_planet()  # Get guess from expert system
+               messagebox.showinfo("Guess", f"I think it's {guess}!")  # Display guess message
+
+           # Update probabilities display after processing answer.
+           self.update_probabilities_display()
+
+    def update_probabilities_display(self):
+       """Display current probabilities of each planet."""
+       probabilities_text = "Current Probabilities:\n"
+       for planet, prob in sorted(self.expert_system.possible_planets.items(), key=lambda x: x[1], reverse=True):
+           probabilities_text += f"{planet}: {prob:.4f}\n"
+       
+       self.probability_label.config(text=probabilities_text)
 
 def main():
     root = tk.Tk()
