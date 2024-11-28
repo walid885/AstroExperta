@@ -1,13 +1,23 @@
 from experta import KnowledgeEngine
 from typing import Dict, Optional
 
-class SolarSystemExpert(KnowledgeEngine):
+class SolarSystemExpertGUI(KnowledgeEngine):
     def __init__(self):
         super().__init__()
+        self.reset_game()
+    def reset_game(self):
+        """Reset game state to initial values."""
         self.possible_planets = {
-            'Mercury': 1.0 / 8, 'Venus': 1.0 / 8, 'Earth': 1.0 / 8, 'Mars': 1.0 / 8,
-            'Jupiter': 1.0 / 8, 'Saturn': 1.0 / 8, 'Uranus': 1.0 / 8, 'Neptune': 1.0 / 8
+            'Mercury': 1.0 / 8,
+            'Venus': 1.0 / 8,
+            'Earth': 1.0 / 8,
+            'Mars': 1.0 / 8,
+            'Jupiter': 1.0 / 8,
+            'Saturn': 1.0 / 8,
+            'Uranus': 1.0 / 8,
+            'Neptune': 1.0 / 8
         }
+
         self.questions = [
             ("is_gas_giant", "Is it a gas giant?", {
                 'Jupiter': True,
@@ -254,6 +264,19 @@ class SolarSystemExpert(KnowledgeEngine):
             self.asked_questions.add(question_id)
             self.question_count += 1  # Increment question count
 
+    def get_next_question(self) -> Optional[tuple]:
+        """Return the next question for the user."""
+        return self.ask_question()
+
+    def process_answer(self, question_id: str, answer: bool):
+        """Process the user's answer to a question."""
+        for question in self.questions:
+            if question[0] == question_id:
+                feature_map = question[2]
+                self.update_probabilities(question_id, answer, feature_map)
+                break
+
+
 if __name__ == "__main__":
-    expert = SolarSystemExpert()
+    expert = SolarSystemExpertGUI()
     expert.play_game()

@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
 import tkinter.font as tkFont
+from Expert_System.knlowledge_engineGUIntegr import SolarSystemExpertGUI  # Importing the expert system
 
 class AstronomyExpertSystem:
     def __init__(self, root):
@@ -20,6 +21,9 @@ class AstronomyExpertSystem:
         
         # Configure the root window
         self.root.configure(bg=self.colors['bg_dark'])
+        
+        # Initialize the expert system
+        self.expert_system = SolarSystemExpertGUI()
         
         # Configure styles
         self.setup_styles()
@@ -70,7 +74,7 @@ class AstronomyExpertSystem:
             self.buttons_frame,
             text="Start Journey",
             style='Start.TButton',
-            command=self.start_game
+            command=self.start_game  # Start game method to fetch questions
         )
         self.start_button.grid(row=0, column=1, padx=10)
         
@@ -78,7 +82,7 @@ class AstronomyExpertSystem:
             self.buttons_frame,
             text="Yes",
             style='Answer.TButton',
-            command=self.yes_clicked,
+            command=lambda: self.process_answer(True),
             state="disabled"
         )
         self.yes_button.grid(row=0, column=0, padx=10)
@@ -87,12 +91,12 @@ class AstronomyExpertSystem:
             self.buttons_frame,
             text="No",
             style='Answer.TButton',
-            command=self.no_clicked,
+            command=lambda: self.process_answer(False),
             state="disabled"
         )
         self.no_button.grid(row=0, column=2, padx=10)
         
-        # Progress Frame
+        # Progress Frame (optional if you want to show progress)
         self.progress_frame = ttk.Frame(self.main_frame, style='Main.TFrame')
         self.progress_frame.grid(row=3, column=0, columnspan=2, pady=20)
         
@@ -103,82 +107,43 @@ class AstronomyExpertSystem:
         )
         self.progress_label.pack()
         
-        self.progress_bar = ttk.Progressbar(
-            self.progress_frame,
-            length=300,
-            mode='determinate',
-            style='Cosmic.Horizontal.TProgressbar'
-        )
-        self.progress_bar.pack(pady=10)
-        
-        # Game state variables
-        self.game_active = False
-        self.current_question = 0
-    
     def setup_styles(self):
-        """Configure custom styles for the application"""
-        style = ttk.Style()
-        
-        # Configure frame styles
-        style.configure('Main.TFrame', background=self.colors['bg_dark'])
-        
-       # Configure question label frame styles 
-        style.configure('Question.TLabelframe', 
+       """Configure custom styles for the application"""
+       style = ttk.Style()
+       style.configure('Main.TFrame', background=self.colors['bg_dark'])
+       style.configure('Question.TLabelframe', 
                        background=self.colors['bg_medium'],
                        foreground=self.colors['text'])
-        style.configure('Question.TLabelframe.Label', 
-                       background=self.colors['bg_medium'],
-                       foreground=self.colors['text'],
-                       font=('Helvetica', 12, 'bold'))
-        
-       # Configure label styles 
-        style.configure('Question.TLabel',
+       style.configure('Question.TLabel',
                        background=self.colors['bg_medium'],
                        foreground=self.colors['text'])
-        style.configure('Progress.TLabel',
-                       background=self.colors['bg_dark'],
-                       foreground=self.colors['text'],
-                       font=('Helvetica', 10))
-        
-       # Configure button styles 
-        style.configure('Start.TButton',
+       style.configure('Start.TButton',
                        background=self.colors['accent'],
                        foreground=self.colors['text'],
                        font=('Helvetica', 11, 'bold'),
                        padding=10)
-        style.configure('Answer.TButton',
+       style.configure('Answer.TButton',
                        background=self.colors['bg_medium'],
                        foreground=self.colors['text'],
                        font=('Helvetica', 11),
                        padding=10)
-        
-       # Configure progress bar style 
-        style.configure('Cosmic.Horizontal.TProgressbar',
-                       troughcolor=self.colors['bg_medium'],
-                       background=self.colors['accent'],
-                       darkcolor=self.colors['accent'],
-                       lightcolor=self.colors['highlight'])
-    
+
     def start_game(self):
-       """Start the game by enabling buttons and resetting progress"""
-       self.game_active = True
-       self.yes_button.config(state="normal")
-       self.no_button.config(state="normal")
-       self.start_button.config(state="disabled")
-       self.question_label.config(text="✨ Is your celestial object a star?")
-       self.progress_bar["value"] = 0
-       self.update_progress()
-    
-    def yes_clicked(self):
-       """Handle yes button click"""
-       self.process_answer(True)
-    
-    def no_clicked(self):
-       """Handle no button click"""
-       self.process_answer(False)
-    
+       """Start the game by enabling buttons and fetching the first question."""
+       self.expert_system.reset_game()  # Reset or initialize game state if needed
+       question = self.expert_system.get_next_question()
+       
+       if question:
+           question_id, question_text, _ = question  # Unpack question details
+           self.question_label.config(text=question_text)  # Display question text
+           self.start_button.config(state="disabled")  # Disable start button during questioning
+           self.yes_button.config(state="normal")  # Enable yes/no buttons
+           self.no_button.config(state="normal")
+
     def process_answer(self, answer):
-       """Process user answers and update game state"""
+       """Process user answers and update game state."""
+       question_id = ...  # Retrieve current question ID (you may need to store this when fetching questions)
+       
        if answer:
            response_text = "Great! Let's explore more."
            print("User answered Yes.")
@@ -186,46 +151,20 @@ class AstronomyExpertSystem:
            response_text = "Interesting! Let's see what else we can find."
            print("User answered No.")
        
-       # Update question count and progress bar
-       self.current_question += 1
-       if (self.current_question < 5):
-           next_question_text = f"Question {self.current_question + 1}"
-           if answer:
-               next_question_text += " (You answered Yes)"
-           else:
-               next_question_text += " (You answered No)"
-           messagebox.showinfo("Response", response_text) 
-           print(next_question_text) 
-           # Update question label with next question logic here...
-           # For example:
-           # if current_question == 1:
-           #     question_label.config(text="Next Question...")
-           
-           # Update progress bar after answering each question.
-           self.update_progress()
+       # Update probabilities in expert system based on user answer
+       self.expert_system.process_answer(question_id, answer)
+
+       next_question = self.expert_system.get_next_question()
        
+       if next_question:
+           question_id, question_text, _ = next_question  # Unpack next question details
+           self.question_label.config(text=question_text)  # Update label with new question text
+           print(f"Next Question: {question_text}")
+           # Optionally update progress here if needed
+
        else:
-           messagebox.showinfo("Journey Complete", "Thank you for exploring the cosmos with us! 🌌")
-           print("Game ended after answering all questions.")
-           # Reset game after completion.
-           self.reset_game()
-    
-    def update_progress(self):
-       """Update progress bar based on current question"""
-       progress = (self.current_question / 5) * 100
-       self.progress_bar["value"] = progress
-       self.progress_label.config(text=f"Cosmic Progress: {int(progress)}%")
-    
-    def end_game(self):
-       """End game process and show completion message"""
-       messagebox.showinfo("Journey Complete", "Thank you for exploring the cosmos with us! 🌌")
-       print("Game ended.")
-    
-    def reset_game(self):
-      """Reset game state to initial values"""
-      print("Resetting game...")
-      messagebox.showinfo("Game Reset", "The game has been reset!")
-      ...
+           guess = self.expert_system.get_most_likely_planet()  # Get guess from expert system
+           messagebox.showinfo("Guess", f"I think it's {guess}!")  # Display guess message
 
 def main():
     root = tk.Tk()
