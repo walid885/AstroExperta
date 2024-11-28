@@ -24,7 +24,7 @@ class AstronomyExpertSystem:
         # Configure styles
         self.setup_styles()
         
-        # Configure the grid weight
+        # Configure grid weight
         self.root.grid_rowconfigure(0, weight=1)
         self.root.grid_columnconfigure(0, weight=1)
         
@@ -121,6 +121,8 @@ class AstronomyExpertSystem:
         
         # Configure frame styles
         style.configure('Main.TFrame', background=self.colors['bg_dark'])
+        
+       # Configure question label frame styles 
         style.configure('Question.TLabelframe', 
                        background=self.colors['bg_medium'],
                        foreground=self.colors['text'])
@@ -129,7 +131,7 @@ class AstronomyExpertSystem:
                        foreground=self.colors['text'],
                        font=('Helvetica', 12, 'bold'))
         
-        # Configure label styles
+       # Configure label styles 
         style.configure('Question.TLabel',
                        background=self.colors['bg_medium'],
                        foreground=self.colors['text'])
@@ -138,7 +140,7 @@ class AstronomyExpertSystem:
                        foreground=self.colors['text'],
                        font=('Helvetica', 10))
         
-        # Configure button styles
+       # Configure button styles 
         style.configure('Start.TButton',
                        background=self.colors['accent'],
                        foreground=self.colors['text'],
@@ -150,7 +152,7 @@ class AstronomyExpertSystem:
                        font=('Helvetica', 11),
                        padding=10)
         
-        # Configure progress bar style
+       # Configure progress bar style 
         style.configure('Cosmic.Horizontal.TProgressbar',
                        troughcolor=self.colors['bg_medium'],
                        background=self.colors['accent'],
@@ -158,47 +160,72 @@ class AstronomyExpertSystem:
                        lightcolor=self.colors['highlight'])
     
     def start_game(self):
-        self.game_active = True
-        self.yes_button.config(state="normal")
-        self.no_button.config(state="normal")
-        self.start_button.config(state="disabled")
-        self.question_label.config(text="✨ Is your celestial object a star?")
-        self.progress_bar["value"] = 0
-        self.update_progress()
+       """Start the game by enabling buttons and resetting progress"""
+       self.game_active = True
+       self.yes_button.config(state="normal")
+       self.no_button.config(state="normal")
+       self.start_button.config(state="disabled")
+       self.question_label.config(text="✨ Is your celestial object a star?")
+       self.progress_bar["value"] = 0
+       self.update_progress()
     
     def yes_clicked(self):
-        self.process_answer(True)
+       """Handle yes button click"""
+       self.process_answer(True)
     
     def no_clicked(self):
-        self.process_answer(False)
+       """Handle no button click"""
+       self.process_answer(False)
     
     def process_answer(self, answer):
-        self.current_question += 1
-        self.update_progress()
-        
-        if self.current_question >= 5:
-            self.end_game()
-        else:
-            self.question_label.config(text=f"Question {self.current_question + 1}")
+       """Process user answers and update game state"""
+       if answer:
+           response_text = "Great! Let's explore more."
+           print("User answered Yes.")
+       else:
+           response_text = "Interesting! Let's see what else we can find."
+           print("User answered No.")
+       
+       # Update question count and progress bar
+       self.current_question += 1
+       if (self.current_question < 5):
+           next_question_text = f"Question {self.current_question + 1}"
+           if answer:
+               next_question_text += " (You answered Yes)"
+           else:
+               next_question_text += " (You answered No)"
+           messagebox.showinfo("Response", response_text) 
+           print(next_question_text) 
+           # Update question label with next question logic here...
+           # For example:
+           # if current_question == 1:
+           #     question_label.config(text="Next Question...")
+           
+           # Update progress bar after answering each question.
+           self.update_progress()
+       
+       else:
+           messagebox.showinfo("Journey Complete", "Thank you for exploring the cosmos with us! 🌌")
+           print("Game ended after answering all questions.")
+           # Reset game after completion.
+           self.reset_game()
     
     def update_progress(self):
-        progress = (self.current_question / 5) * 100
-        self.progress_bar["value"] = progress
-        self.progress_label.config(text=f"Cosmic Progress: {int(progress)}%")
+       """Update progress bar based on current question"""
+       progress = (self.current_question / 5) * 100
+       self.progress_bar["value"] = progress
+       self.progress_label.config(text=f"Cosmic Progress: {int(progress)}%")
     
     def end_game(self):
-        messagebox.showinfo("Journey Complete", "Thank you for exploring the cosmos with us! 🌌")
-        self.reset_game()
+       """End game process and show completion message"""
+       messagebox.showinfo("Journey Complete", "Thank you for exploring the cosmos with us! 🌌")
+       print("Game ended.")
     
     def reset_game(self):
-        self.game_active = False
-        self.current_question = 0
-        self.yes_button.config(state="disabled")
-        self.no_button.config(state="disabled")
-        self.start_button.config(state="normal")
-        self.question_label.config(text="🌟 Think of a celestial object and press Start! 🌟")
-        self.progress_bar["value"] = 0
-        self.progress_label.config(text="Cosmic Progress: 0%")
+      """Reset game state to initial values"""
+      print("Resetting game...")
+      messagebox.showinfo("Game Reset", "The game has been reset!")
+      ...
 
 def main():
     root = tk.Tk()
