@@ -146,8 +146,7 @@ class AstronomyExpertSystem:
        """Process user answers and update game state."""
        print(f"User answered {'Yes' if answer else 'No'}.")
        
-       # Update probabilities in expert system based on user answer using stored feature map and question ID
-       if hasattr(self, 'current_feature_map'):  # Ensure feature map exists before accessing it
+       if hasattr(self, 'current_feature_map'):
            feature_map = self.current_feature_map  
            question_id = self.current_question_id  
            print(f"Processing answer for question ID: {question_id}")
@@ -158,15 +157,20 @@ class AstronomyExpertSystem:
            next_question = self.expert_system.get_next_question()
            
            if next_question:
-               question_id, question_text, feature_map = next_question  # Unpack next question details including feature map
-               self.current_question_id = question_id  # Update current question ID for next round
-               self.current_feature_map = feature_map  # Update current feature map for next round
+               question_id, question_text, feature_map = next_question  
+               self.current_question_id = question_id  
+               self.current_feature_map = feature_map  
 
-               self.question_label.config(text=question_text)  # Update label with new question text
+               self.question_label.config(text=question_text)  
 
            else:
-               guess = self.expert_system.get_most_likely_planet()  # Get guess from expert system
-               messagebox.showinfo("Guess", f"I think it's {guess}!")  # Display guess message
+               guess = self.expert_system.get_most_likely_planet()  
+               messagebox.showinfo("Guess", f"I think it's {guess}!")  
+
+               if guess == "Earth":
+                   messagebox.showinfo("Correct Guess!", "Great! I guessed it right!")
+               else:
+                   messagebox.showinfo("Wrong Guess", f"I guessed {guess}, was I right?")
 
            # Update probabilities display after processing answer.
            self.update_probabilities_display()
@@ -176,6 +180,10 @@ class AstronomyExpertSystem:
        probabilities_text = "Current Probabilities:\n"
        for planet, prob in sorted(self.expert_system.possible_planets.items(), key=lambda x: x[1], reverse=True):
            probabilities_text += f"{planet}: {prob:.4f}\n"
+       
+       if max(self.expert_system.possible_planets.values()) > 0.8:
+           guess_planet = max(self.expert_system.possible_planets.items(), key=lambda x: x[1])[0]
+           probabilities_text += f"\nI might guess: {guess_planet}!"
        
        self.probability_label.config(text=probabilities_text)
 
