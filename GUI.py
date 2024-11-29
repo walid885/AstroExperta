@@ -6,6 +6,10 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from Expert_System.knlowledge_engineGUIntegr import SolarSystemExpertGUI  # Ensure correct import
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 class AstronomyExpertSystem:
     def __init__(self, root):
@@ -108,9 +112,9 @@ class AstronomyExpertSystem:
         )
         self.no_button.grid(row=0, column=2, padx=10)
 
-        # Canvas for displaying histogram
-        self.histogram_canvas = tk.Canvas(self.main_frame, width=400, height=300)
-        self.histogram_canvas.grid(row=1, column=2, rowspan=2, padx=(20, 0))
+        # Create initial figure for histogram and draw it on the canvas
+        plt.figure(figsize=(4, 3))
+        self.ax = plt.gca()  # Get current axis to update later
 
     def setup_styles(self):
        """Configure custom styles for the application"""
@@ -149,6 +153,9 @@ class AstronomyExpertSystem:
            self.no_button.config(state="normal")  
 
            self.update_probabilities_display()  # Show initial probabilities
+
+           # Initial histogram plot setup.
+           self.update_histogram()
 
     def process_answer(self, answer):
        """Process user answers and update game state."""
@@ -198,27 +205,51 @@ class AstronomyExpertSystem:
        self.probability_label.config(text=probabilities_text)
 
     def update_histogram(self):
-       """Update the histogram on the canvas with current probabilities."""
-       planets = list(self.expert_system.possible_planets.keys())
-       probabilities = list(self.expert_system.possible_planets.values())
+        """Update the histogram on the canvas with current probabilities."""
+        # Clear any existing canvas widgets
+        for widget in self.main_frame.winfo_children():
+            if isinstance(widget, tk.Canvas):
+                widget.destroy()
 
-       plt.figure(figsize=(4, 3))  # Set figure size for canvas dimensions.
-       plt.clf()  # Clear previous figure.
-       
-       sns.barplot(x=planets, y=probabilities, palette='viridis')
-       
-       plt.title('Current Probabilities of Celestial Objects')
-       plt.xlabel('Celestial Objects')
-       plt.ylabel('Probability')
-       plt.xticks(rotation=45)
+        # Create a new figure with a specific size
+        plt.figure(figsize=(6, 4), dpi=100)
+        
+        # Use pandas-style plotting to avoid the deprecation warning
+        import pandas as pd
+        
+        # Convert probabilities to a DataFrame for easier plotting
+        df = pd.DataFrame({
+            'Celestial Object': list(self.expert_system.possible_planets.keys()),
+            'Probability': list(self.expert_system.possible_planets.values())
+        })
+        
+        # Plot using seaborn with hue parameter
+        plt.figure(figsize=(6, 4), dpi=100)
+        ax = sns.barplot(x='Celestial Object', y='Probability', 
+                        data=df, 
+                        palette='viridis', 
+                        hue='Celestial Object', 
+                        dodge=False,
+                        legend=False)
+        
+        plt.title('Current Probabilities of Celestial Objects')
+        plt.xlabel('Celestial Objects')
+        plt.ylabel('Probability')
+        plt.xticks(rotation=45)
+        plt.tight_layout()
 
-       plt.tight_layout()
-
-       # Draw the plot on the Tkinter canvas.
-       canvas_widget = FigureCanvasTkAgg(plt.gcf(), master=self.histogram_canvas)
-       canvas_widget.draw()
-       canvas_widget.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
-
+        # Create a new canvas using FigureCanvasTkAgg
+        canvas = FigureCanvasTkAgg(plt.gcf(), master=self.main_frame)
+        canvas_widget = canvas.get_tk_widget()
+        
+        # Use grid instead of pack to match the existing layout
+        canvas_widget.grid(row=3, column=0, columnspan=2, sticky="nsew")
+        
+        # Draw the canvas
+        canvas.draw()
+        
+        # Close the figure to free up memory
+        plt.close()
 def main():
     root = tk.Tk()
     app = AstronomyExpertSystem(root)
