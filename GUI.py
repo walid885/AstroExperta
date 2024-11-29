@@ -145,6 +145,8 @@ class AstronomyExpertSystem:
             font=("Helvetica", 12)
         )
         self.probability_label.pack(pady=20)
+        self.initialize_histogram()
+
 
     def setup_styles(self):
         """Configure custom styles for the application"""
@@ -317,6 +319,31 @@ class AstronomyExpertSystem:
         
     #     # Close the figure to free up memory
     #     plt.close()
+    def create_histogram(self, df):
+        plt.figure(figsize=(8, 6), dpi=100, facecolor=self.colors['bg_medium'])
+        plt.style.use('dark_background')
+        ax = sns.barplot(
+            x='Celestial Object', y='Probability', data=df,
+            palette='viridis', hue='Celestial Object', dodge=False, legend=False
+        )
+        
+        plt.title('Probability of Celestial Objects', color=self.colors['text'], fontsize=16, fontweight='bold')
+        plt.xlabel('Celestial Objects', color=self.colors['text'])
+        plt.ylabel('Probability', color=self.colors['text'])
+        plt.xticks(rotation=45, color=self.colors['text'])
+        plt.yticks(color=self.colors['text'])
+        
+        for i, v in enumerate(df['Probability']):
+            ax.text(i, v, f'{v:.4f}', ha='center', va='bottom', color=self.colors['text'], fontweight='bold')
+        
+        plt.tight_layout()
+        
+        canvas = FigureCanvasTkAgg(plt.gcf(), master=self.canvas_frame)
+        canvas_widget = canvas.get_tk_widget()
+        canvas_widget.pack(fill=tk.BOTH, expand=True)
+        canvas.draw()
+        plt.close()
+
 
     def update_histogram(self):
             # Clear existing widgets
@@ -377,11 +404,40 @@ class AstronomyExpertSystem:
         # Close the figure to free up memory
         plt.close()
 
+    def initialize_histogram(self):
+        fixed_objects = ['Mercury', 'Venus', 'Earth', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune']
+        initial_probabilities = {obj: 0.125 for obj in fixed_objects}  # Equal probability for all objects
+        
+        df = pd.DataFrame({
+            'Celestial Object': fixed_objects,
+            'Probability': [initial_probabilities[obj] for obj in fixed_objects]
+        })
+        
+        self.create_histogram(df)
+
+
+    def update_histogram(self):
+        for widget in self.canvas_frame.winfo_children():
+            widget.destroy()
+
+        fixed_objects = ['Mercury', 'Venus', 'Earth', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune']
+        all_probabilities = {obj: 0 for obj in fixed_objects}
+        all_probabilities.update(self.expert_system.possible_planets)
+
+        df = pd.DataFrame({
+            'Celestial Object': fixed_objects,
+            'Probability': [all_probabilities[obj] for obj in fixed_objects]
+        })
+
+        self.create_histogram(df)
 
     def start_game(self):
         """Start the game by enabling buttons and fetching the first question."""
         self.expert_system.reset_game()
+
         question = self.expert_system.get_next_question()
+
+
         
         if question:
             question_id, question_text, feature_map = question
