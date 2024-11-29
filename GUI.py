@@ -318,6 +318,7 @@ class AstronomyExpertSystem:
         # Close the figure to free up memory
         plt.close()
 
+
     def start_game(self):
         """Start the game by enabling buttons and fetching the first question."""
         self.expert_system.reset_game()
