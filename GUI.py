@@ -12,16 +12,18 @@ class AstronomyExpertSystem:
     def __init__(self, root):
         self.root = root
         self.root.title("AstroAcademy Expert System")
-        self.root.geometry("1200x800")  # Increased window size
+        self.root.geometry("1400x800")  # Increased window size to accommodate new frame
         
-        # Enhanced color scheme
+        # Enhanced color scheme (previous colors remain the same)
         self.colors = {
             'bg_dark': '#0B1026',      # Deep space blue
             'bg_medium': '#1B2559',    # Midnight blue
             'accent': '#4B61D1',       # Stellar blue
             'text': '#E6E8F0',         # Starlight white
             'highlight': '#8B9EF0',    # Nebula purple
-            'background_soft': '#2C3E50'  # Soft dark background
+            'background_soft': '#2C3E50',  # Soft dark background
+            'success_green': '#2ECC71',    # Success green
+            'warning_yellow': '#F39C12'    # Warning yellow
         }
         
         # Configure the root window
@@ -37,11 +39,12 @@ class AstronomyExpertSystem:
         self.root.grid_rowconfigure(0, weight=1)
         self.root.grid_columnconfigure(0, weight=1)
         
-        # Create main frame with two columns
+        # Create main frame with three columns
         self.main_frame = ttk.Frame(self.root, style='Main.TFrame', padding="30")
         self.main_frame.grid(row=0, column=0, sticky="nsew")
-        self.main_frame.grid_columnconfigure(0, weight=1)
-        self.main_frame.grid_columnconfigure(1, weight=1)
+        self.main_frame.grid_columnconfigure(0, weight=1)  # Visualization
+        self.main_frame.grid_columnconfigure(1, weight=1)  # Question
+        self.main_frame.grid_columnconfigure(2, weight=1)  # Thinking Frame
         
         # Title Label
         title_font = tkFont.Font(family="Helvetica", size=28, weight="bold")
@@ -52,7 +55,7 @@ class AstronomyExpertSystem:
             bg=self.colors['bg_dark'],
             fg=self.colors['text']
         )
-        self.title_label.grid(row=0, column=0, columnspan=2, pady=(0, 30), sticky="ew")
+        self.title_label.grid(row=0, column=0, columnspan=3, pady=(0, 30), sticky="ew")
         
         # Left Column - Probability Visualization Frame
         self.visualization_frame = ttk.LabelFrame(
@@ -67,7 +70,7 @@ class AstronomyExpertSystem:
         self.canvas_frame = ttk.Frame(self.visualization_frame)
         self.canvas_frame.pack(fill=tk.BOTH, expand=True)
         
-        # Right Column - Question Frame
+        # Middle Column - Question Frame
         self.question_frame = ttk.LabelFrame(
             self.main_frame,
             text="Your Cosmic Quest",
@@ -116,9 +119,27 @@ class AstronomyExpertSystem:
         )
         self.no_button.grid(row=0, column=2, padx=10)
         
-        # Probability Label
+        # Right Column - Thinking Frame
+        self.thinking_frame = ttk.LabelFrame(
+            self.main_frame,
+            text="System's Thought Process",
+            style='Thinking.TLabelframe',
+            padding="20"
+        )
+        self.thinking_frame.grid(row=1, column=2, sticky="nsew", padx=10, pady=10)
+        
+        # Thinking Label
+        self.thinking_label = ttk.Label(
+            self.thinking_frame,
+            text="🤔 THINKING... 🌌",
+            style='Thinking.TLabel',
+            font=("Helvetica", 16, "bold")
+        )
+        self.thinking_label.pack(pady=20, expand=True)
+        
+        # Probability Label in Thinking Frame
         self.probability_label = ttk.Label(
-            self.question_frame,
+            self.thinking_frame,
             text="Current Probabilities: ",
             style='Probability.TLabel',
             font=("Helvetica", 12)
@@ -152,6 +173,91 @@ class AstronomyExpertSystem:
                        foreground=self.colors['text'],
                        font=('Helvetica', 12),
                        padding=10)
+        style.configure('Thinking.TLabelframe', 
+                       background=self.colors['bg_medium'],
+                       foreground=self.colors['text'])
+        style.configure('Thinking.TLabel',
+                       background=self.colors['bg_medium'],
+                       foreground=self.colors['highlight'],
+                       font=('Helvetica', 16, 'bold'))
+
+    def process_answer(self, answer):
+        """Process user answers and update game state."""
+        print(f"User answered {'Yes' if answer else 'No'}.")
+        
+        if hasattr(self, 'current_feature_map'):
+            feature_map = self.current_feature_map  
+            question_id = self.current_question_id  
+            print(f"Processing answer for question ID: {question_id}")
+
+            # Update probabilities based on user response (yes/no)
+            self.expert_system.update_probabilities(question_id, answer, feature_map)
+
+            next_question = self.expert_system.get_next_question()
+            
+            if next_question:
+                question_id, question_text, feature_map = next_question  
+                self.current_question_id = question_id  
+                self.current_feature_map = feature_map  
+
+                self.question_label.config(text=question_text)  
+                # Reset thinking label to thinking state
+                self.reset_thinking_label()
+
+            else:
+                guess = self.expert_system.get_most_likely_planet()  
+                
+                # Update thinking label with the guess
+                if guess == "Earth":
+                    self.update_thinking_label(
+                        f"🌍 I think it is {guess}! ✨", 
+                        color=self.colors['success_green']
+                    )
+                else:
+                    self.update_thinking_label(
+                        f"🤔 I think it is {guess}!", 
+                        color=self.colors['warning_yellow']
+                    )
+
+                # Disable answer buttons after game completion
+                self.yes_button.config(state="disabled")
+                self.no_button.config(state="disabled")
+                self.start_button.config(state="normal")
+
+            # Update probabilities display after processing answer.
+            self.update_probabilities_display()
+            # Update histogram after processing answer.
+            self.update_histogram()
+
+    def show_result_banner(self, message, color=None):
+        """Display a message in the result banner with optional color."""
+        self.result_banner.config(
+            text=message, 
+            bg=color or self.colors['bg_medium']
+        )
+
+    def reset_result_banner(self):
+        """Reset the result banner to its default state."""
+        self.result_banner.config(
+            text="",
+            bg=self.colors['bg_medium']
+        )
+
+    def update_thinking_label(self, message, color=None):
+        """Update the thinking label with a specific message and optional color."""
+        self.thinking_label.config(
+            text=message, 
+            foreground=color or self.colors['text']
+        )
+
+    def reset_thinking_label(self):
+        """Reset the thinking label to its default state."""
+        self.thinking_label.config(
+            text="🤔 THINKING... 🌌",
+            foreground=self.colors['highlight']
+        )
+
+
 
     def update_histogram(self):
         """Update the histogram on the canvas with current probabilities."""
@@ -227,8 +333,12 @@ class AstronomyExpertSystem:
             self.yes_button.config(state="normal")
             self.no_button.config(state="normal")
 
+            # Reset thinking label to initial state
+            self.reset_thinking_label()
+
             self.update_probabilities_display()
             self.update_histogram()
+
 
     def process_answer(self, answer):
         """Process user answers and update game state."""
