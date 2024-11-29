@@ -4,12 +4,9 @@ from tkinter import messagebox
 import tkinter.font as tkFont
 import matplotlib.pyplot as plt
 import seaborn as sns
+import pandas as pd
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from Expert_System.knlowledge_engineGUIntegr import SolarSystemExpertGUI  # Ensure correct import
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 class AstronomyExpertSystem:
     def __init__(self, root):
@@ -57,14 +54,27 @@ class AstronomyExpertSystem:
         )
         self.title_label.grid(row=0, column=0, columnspan=2, pady=(0, 30), sticky="ew")
         
-        # Left Column - Question Frame
+        # Left Column - Probability Visualization Frame
+        self.visualization_frame = ttk.LabelFrame(
+            self.main_frame,
+            text="Probability Visualization",
+            style='Visualization.TLabelframe',
+            padding="20"
+        )
+        self.visualization_frame.grid(row=1, column=0, sticky="nsew", padx=10, pady=10)
+        
+        # Placeholder for matplotlib canvas
+        self.canvas_frame = ttk.Frame(self.visualization_frame)
+        self.canvas_frame.pack(fill=tk.BOTH, expand=True)
+        
+        # Right Column - Question Frame
         self.question_frame = ttk.LabelFrame(
             self.main_frame,
             text="Your Cosmic Quest",
             style='Question.TLabelframe',
             padding="20"
         )
-        self.question_frame.grid(row=1, column=0, sticky="nsew", padx=10, pady=10)
+        self.question_frame.grid(row=1, column=1, sticky="nsew", padx=10, pady=10)
         
         # Question Label
         self.question_label = ttk.Label(
@@ -114,19 +124,6 @@ class AstronomyExpertSystem:
             font=("Helvetica", 12)
         )
         self.probability_label.pack(pady=20)
-        
-        # Right Column - Probability Visualization Frame
-        self.visualization_frame = ttk.LabelFrame(
-            self.main_frame,
-            text="Probability Visualization",
-            style='Visualization.TLabelframe',
-            padding="20"
-        )
-        self.visualization_frame.grid(row=1, column=1, sticky="nsew", padx=10, pady=10)
-        
-        # Placeholder for matplotlib canvas
-        self.canvas_frame = ttk.Frame(self.visualization_frame)
-        self.canvas_frame.pack(fill=tk.BOTH, expand=True)
 
     def setup_styles(self):
         """Configure custom styles for the application"""
@@ -215,126 +212,75 @@ class AstronomyExpertSystem:
         # Close the figure to free up memory
         plt.close()
 
-
-
     def start_game(self):
-       """Start the game by enabling buttons and fetching the first question."""
-       self.expert_system.reset_game()  # Reset or initialize game state if needed
-       question = self.expert_system.get_next_question()
-       
-       if question:
-           question_id, question_text, feature_map = question  # Unpack question details including feature map
-           self.current_question_id = question_id  # Store current question ID for later use
-           self.current_feature_map = feature_map  # Store current feature map for later use
+        """Start the game by enabling buttons and fetching the first question."""
+        self.expert_system.reset_game()
+        question = self.expert_system.get_next_question()
+        
+        if question:
+            question_id, question_text, feature_map = question
+            self.current_question_id = question_id
+            self.current_feature_map = feature_map
 
-           self.question_label.config(text=question_text)  # Display question text
-           self.start_button.config(state="disabled")  # Disable start button during questioning
-           self.yes_button.config(state="normal")  # Enable yes/no buttons
-           self.no_button.config(state="normal")  
+            self.question_label.config(text=question_text)
+            self.start_button.config(state="disabled")
+            self.yes_button.config(state="normal")
+            self.no_button.config(state="normal")
 
-           self.update_probabilities_display()  # Show initial probabilities
-
-           # Initial histogram plot setup.
-           self.update_histogram()
+            self.update_probabilities_display()
+            self.update_histogram()
 
     def process_answer(self, answer):
-       """Process user answers and update game state."""
-       print(f"User answered {'Yes' if answer else 'No'}.")
-       
-       if hasattr(self, 'current_feature_map'):
-           feature_map = self.current_feature_map  
-           question_id = self.current_question_id  
-           print(f"Processing answer for question ID: {question_id}")
+        """Process user answers and update game state."""
+        print(f"User answered {'Yes' if answer else 'No'}.")
+        
+        if hasattr(self, 'current_feature_map'):
+            feature_map = self.current_feature_map  
+            question_id = self.current_question_id  
+            print(f"Processing answer for question ID: {question_id}")
 
-           # Update probabilities based on user response (yes/no)
-           self.expert_system.update_probabilities(question_id, answer, feature_map)
+            # Update probabilities based on user response (yes/no)
+            self.expert_system.update_probabilities(question_id, answer, feature_map)
 
-           next_question = self.expert_system.get_next_question()
-           
-           if next_question:
-               question_id, question_text, feature_map = next_question  
-               self.current_question_id = question_id  
-               self.current_feature_map = feature_map  
+            next_question = self.expert_system.get_next_question()
+            
+            if next_question:
+                question_id, question_text, feature_map = next_question  
+                self.current_question_id = question_id  
+                self.current_feature_map = feature_map  
 
-               self.question_label.config(text=question_text)  
+                self.question_label.config(text=question_text)  
 
-           else:
-               guess = self.expert_system.get_most_likely_planet()  
-               messagebox.showinfo("Guess", f"I think it's {guess}!")  
+            else:
+                guess = self.expert_system.get_most_likely_planet()  
+                messagebox.showinfo("Guess", f"I think it's {guess}!")  
 
-               if guess == "Earth":
-                   messagebox.showinfo("Correct Guess!", "Great! I guessed it right!")
-               else:
-                   messagebox.showinfo("Wrong Guess", f"I guessed {guess}, was I right?")
+                if guess == "Earth":
+                    messagebox.showinfo("Correct Guess!", "Great! I guessed it right!")
+                else:
+                    messagebox.showinfo("Wrong Guess", f"I guessed {guess}, was I right?")
 
-           # Update probabilities display after processing answer.
-           self.update_probabilities_display()
-           # Update histogram after processing answer.
-           self.update_histogram()
+            # Update probabilities display after processing answer.
+            self.update_probabilities_display()
+            # Update histogram after processing answer.
+            self.update_histogram()
 
     def update_probabilities_display(self):
-       """Display current probabilities of each planet."""
-       probabilities_text = "Current Probabilities:\n"
-       for planet, prob in sorted(self.expert_system.possible_planets.items(), key=lambda x: x[1], reverse=True):
-           probabilities_text += f"{planet}: {prob:.4f}\n"
-       
-       if max(self.expert_system.possible_planets.values()) > 0.8:
-           guess_planet = max(self.expert_system.possible_planets.items(), key=lambda x: x[1])[0]
-           probabilities_text += f"\nI might guess: {guess_planet}!"
-       
-       self.probability_label.config(text=probabilities_text)
+        """Display current probabilities of each planet."""
+        probabilities_text = "Current Probabilities:\n"
+        for planet, prob in sorted(self.expert_system.possible_planets.items(), key=lambda x: x[1], reverse=True):
+            probabilities_text += f"{planet}: {prob:.4f}\n"
+        
+        if max(self.expert_system.possible_planets.values()) > 0.8:
+            guess_planet = max(self.expert_system.possible_planets.items(), key=lambda x: x[1])[0]
+            probabilities_text += f"\nI might guess: {guess_planet}!"
+        
+        self.probability_label.config(text=probabilities_text)
 
-    def update_histogram(self):
-        """Update the histogram on the canvas with current probabilities."""
-        # Clear any existing canvas widgets
-        for widget in self.main_frame.winfo_children():
-            if isinstance(widget, tk.Canvas):
-                widget.destroy()
-
-        # Create a new figure with a specific size
-        plt.figure(figsize=(6, 4), dpi=100)
-        
-        # Use pandas-style plotting to avoid the deprecation warning
-        import pandas as pd
-        
-        # Convert probabilities to a DataFrame for easier plotting
-        df = pd.DataFrame({
-            'Celestial Object': list(self.expert_system.possible_planets.keys()),
-            'Probability': list(self.expert_system.possible_planets.values())
-        })
-        
-        # Plot using seaborn with hue parameter
-        plt.figure(figsize=(6, 4), dpi=100)
-        ax = sns.barplot(x='Celestial Object', y='Probability', 
-                        data=df, 
-                        palette='viridis', 
-                        hue='Celestial Object', 
-                        dodge=False,
-                        legend=False)
-        
-        plt.title('Current Probabilities of Celestial Objects')
-        plt.xlabel('Celestial Objects')
-        plt.ylabel('Probability')
-        plt.xticks(rotation=45)
-        plt.tight_layout()
-
-        # Create a new canvas using FigureCanvasTkAgg
-        canvas = FigureCanvasTkAgg(plt.gcf(), master=self.main_frame)
-        canvas_widget = canvas.get_tk_widget()
-        
-        # Use grid instead of pack to match the existing layout
-        canvas_widget.grid(row=3, column=0, columnspan=2, sticky="nsew")
-        
-        # Draw the canvas
-        canvas.draw()
-        
-        # Close the figure to free up memory
-        plt.close()
 def main():
     root = tk.Tk()
     app = AstronomyExpertSystem(root)
     root.mainloop()
-
 
 if __name__ == "__main__":
     main()
