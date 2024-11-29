@@ -155,7 +155,9 @@ class AstronomyExpertSystem:
         command=self.reset_game,
         state="disabled"
     )
+        
         self.reset_button.grid(row=1, column=1, padx=10, pady=(10, 0))
+
 
 
 
@@ -342,21 +344,6 @@ class AstronomyExpertSystem:
         self.create_histogram(df)
 
 
-    def update_histogram(self):
-        for widget in self.canvas_frame.winfo_children():
-            widget.destroy()
-
-        fixed_objects = ['Mercury', 'Venus', 'Earth', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune']
-        all_probabilities = {obj: 0 for obj in fixed_objects}
-        all_probabilities.update(self.expert_system.possible_planets)
-
-        df = pd.DataFrame({
-            'Celestial Object': fixed_objects,
-            'Probability': [all_probabilities[obj] for obj in fixed_objects]
-        })
-
-        self.create_histogram(df)
-
     def start_game(self):
         self.expert_system.reset_game()
         self.initialize_histogram()
@@ -408,19 +395,78 @@ class AstronomyExpertSystem:
             self.update_probabilities_display()
             # Update histogram after processing answer.
             self.update_histogram()
+    def update_final_guess(self, guess):
+            """
+            Elegantly display the final guess with enhanced visual and informative feedback.
+            
+            Provides a comprehensive breakdown of the guess, including:
+            - Planet emoji
+            - Confidence level
+            - Detailed probability explanation
+            """
+            planet_emojis = {
+                "Mercury": "☿", "Venus": "♀", 
+                "Earth": "🌍", "Mars": "♂",
+                "Jupiter": "♃", "Saturn": "♄", 
+                "Uranus": "⛢", "Neptune": "♆"
+            }
 
+            emoji = planet_emojis.get(guess, "🌠")
+            confidence = self.expert_system.possible_planets.get(guess, 0)
+            
+            # Create a more detailed probability breakdown
+            probabilities = self.expert_system.possible_planets
+            sorted_probabilities = sorted(probabilities.items(), key=lambda x: x[1], reverse=True)
+            
+            # Generate a detailed probability explanation
+            prob_explanation = "Probability Breakdown:\n"
+            for planet, prob in sorted_probabilities[:3]:  # Show top 3 most likely planets
+                prob_explanation += f"{planet}: {prob*100:.2f}%\n"
+
+            # Determine confidence message based on probability
+            if confidence >= 0.8:
+                confidence_message = "High Confidence! 🌟"
+                color = self.colors['success_green']
+            elif confidence >= 0.5:
+                confidence_message = "Moderate Confidence 🔍"
+                color = self.colors['highlight']
+            else:
+                confidence_message = "Low Confidence 🤨"
+                color = self.colors['warning_yellow']
+
+            # Comprehensive thinking label
+            full_message = (
+                f"🎯 Final Guess: {guess} {emoji}\n"
+                f"{confidence_message} (Confidence: {confidence*100:.2f}%)\n\n"
+                f"{prob_explanation}"
+            )
+
+            # Update thinking label with comprehensive information
+            self.update_thinking_label(full_message, color=color)
+
+            # Disable/enable buttons appropriately
+            self.yes_button.config(state="disabled")
+            self.no_button.config(state="disabled")
+            self.start_button.config(state="normal")
+            self.reset_button.config(state="normal")    
+
+
+    def setup_emoji_font(self):
+        # Use a font that supports emojis
+        emoji_font = tkFont.Font(family="Segoe UI Emoji", size=12)
+        self.probability_label.configure(font=emoji_font)
 
     def update_probabilities_display(self):
-        """Display current probabilities of each planet."""
         probabilities_text = "Current Probabilities:\n"
         for planet, prob in sorted(self.expert_system.possible_planets.items(), key=lambda x: x[1], reverse=True):
             probabilities_text += f"{planet}: {prob:.4f}\n"
         
         if max(self.expert_system.possible_planets.values()) > 0.8:
             guess_planet = max(self.expert_system.possible_planets.items(), key=lambda x: x[1])[0]
-            probabilities_text += f"\nI might guess: {guess_planet}!"
+            probabilities_text += f"\n\U0001F680 BREAKING NEWS: I MIGHT GUESS: {guess_planet.upper()}! \U00002B50"
         
         self.probability_label.config(text=probabilities_text)
+
     def update_guess_thinking(self, probabilities, threshold=0.8):
         """
         Update the thinking label with an enthusiastic guess when a planet's 
@@ -443,61 +489,6 @@ class AstronomyExpertSystem:
         
         guess_message = f"Hmm... I'm leaning towards {top_planet} {planet_emojis[top_planet]} ({top_prob:.2%})"
         self.update_thinking_label(guess_message, self.colors['highlight'])
-
-    def update_final_guess(self, guess):
-        """
-        Elegantly display the final guess with enhanced visual and informative feedback.
-        
-        Provides a comprehensive breakdown of the guess, including:
-        - Planet emoji
-        - Confidence level
-        - Detailed probability explanation
-        """
-        planet_emojis = {
-            "Mercury": "☿", "Venus": "♀", 
-            "Earth": "🌍", "Mars": "♂",
-            "Jupiter": "♃", "Saturn": "♄", 
-            "Uranus": "⛢", "Neptune": "♆"
-        }
-
-        emoji = planet_emojis.get(guess, "🌠")
-        confidence = self.expert_system.possible_planets.get(guess, 0)
-        
-        # Create a more detailed probability breakdown
-        probabilities = self.expert_system.possible_planets
-        sorted_probabilities = sorted(probabilities.items(), key=lambda x: x[1], reverse=True)
-        
-        # Generate a detailed probability explanation
-        prob_explanation = "Probability Breakdown:\n"
-        for planet, prob in sorted_probabilities[:3]:  # Show top 3 most likely planets
-            prob_explanation += f"{planet}: {prob*100:.2f}%\n"
-
-        # Determine confidence message based on probability
-        if confidence >= 0.8:
-            confidence_message = "High Confidence! 🌟"
-            color = self.colors['success_green']
-        elif confidence >= 0.5:
-            confidence_message = "Moderate Confidence 🔍"
-            color = self.colors['highlight']
-        else:
-            confidence_message = "Low Confidence 🤨"
-            color = self.colors['warning_yellow']
-
-        # Comprehensive thinking label
-        full_message = (
-            f"🎯 Final Guess: {guess} {emoji}\n"
-            f"{confidence_message} (Confidence: {confidence*100:.2f}%)\n\n"
-            f"{prob_explanation}"
-        )
-
-        # Update thinking label with comprehensive information
-        self.update_thinking_label(full_message, color=color)
-
-        # Disable/enable buttons appropriately
-        self.yes_button.config(state="disabled")
-        self.no_button.config(state="disabled")
-        self.start_button.config(state="normal")
-        self.reset_button.config(state="normal")    
 
 
 def main():
