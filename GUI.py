@@ -146,6 +146,15 @@ class AstronomyExpertSystem:
         )
         self.probability_label.pack(pady=20)
         self.initialize_histogram()
+        self.reset_button = ttk.Button(
+        self.buttons_frame,
+        text="Reset Game",
+        style='Reset.TButton',
+        command=self.reset_game,
+        state="disabled"
+    )
+        self.reset_button.grid(row=1, column=1, padx=10, pady=(10, 0))
+
 
 
     def setup_styles(self):
@@ -182,6 +191,11 @@ class AstronomyExpertSystem:
                        background=self.colors['bg_medium'],
                        foreground=self.colors['highlight'],
                        font=('Helvetica', 16, 'bold'))
+        style.configure('Reset.TButton',
+                         background=self.colors['warning_yellow'], 
+                         foreground=self.colors['text'], 
+                         font=('Helvetica', 12), padding=10)
+
 
     def process_answer(self, answer):
         """Process user answers and update game state."""
@@ -245,6 +259,18 @@ class AstronomyExpertSystem:
             bg=self.colors['bg_medium']
         )
 
+    def reset_game(self):
+        self.expert_system.reset_game()
+        self.initialize_histogram()
+        self.question_label.config(text="🌟 Think of a celestial object and press Start! 🌟")
+        self.start_button.config(state="normal")
+        self.yes_button.config(state="disabled")
+        self.no_button.config(state="disabled")
+        self.reset_button.config(state="disabled")
+        self.reset_thinking_label()
+        self.update_probabilities_display()
+
+    
     def update_thinking_label(self, message, color=None):
         """Update the thinking label with a specific message and optional color."""
         self.thinking_label.config(
@@ -373,28 +399,22 @@ class AstronomyExpertSystem:
         self.create_histogram(df)
 
     def start_game(self):
-        """Start the game by enabling buttons and fetching the first question."""
         self.expert_system.reset_game()
-
+        self.initialize_histogram()
         question = self.expert_system.get_next_question()
-
-
-        
         if question:
             question_id, question_text, feature_map = question
             self.current_question_id = question_id
             self.current_feature_map = feature_map
-
             self.question_label.config(text=question_text)
             self.start_button.config(state="disabled")
             self.yes_button.config(state="normal")
             self.no_button.config(state="normal")
-
-            # Reset thinking label to initial state
+            self.reset_button.config(state="normal")  # Enable reset button
             self.reset_thinking_label()
-
             self.update_probabilities_display()
             self.update_histogram()
+
 
 
     def process_answer(self, answer):
