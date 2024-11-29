@@ -2,6 +2,8 @@ import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
 import tkinter.font as tkFont
+import matplotlib.pyplot as plt
+import seaborn as sns
 from Expert_System.knlowledge_engineGUIntegr import SolarSystemExpertGUI  # Ensure correct import
 
 class AstronomyExpertSystem:
@@ -105,6 +107,16 @@ class AstronomyExpertSystem:
         )
         self.no_button.grid(row=0, column=2, padx=10)
 
+        # Button to show histogram of probabilities
+        self.histogram_button = ttk.Button(
+            self.buttons_frame,
+            text="Show Probability Histogram",
+            style='Histogram.TButton',
+            command=self.show_histogram,
+            state="disabled"  # Initially disabled until game starts
+        )
+        self.histogram_button.grid(row=1, columnspan=3, pady=(10, 0))
+
     def setup_styles(self):
        """Configure custom styles for the application"""
        style = ttk.Style()
@@ -125,6 +137,11 @@ class AstronomyExpertSystem:
                        foreground=self.colors['text'],
                        font=('Helvetica', 11),
                        padding=10)
+       style.configure('Histogram.TButton',
+                       background=self.colors['highlight'],
+                       foreground=self.colors['text'],
+                       font=('Helvetica', 11),
+                       padding=10)
 
     def start_game(self):
        """Start the game by enabling buttons and fetching the first question."""
@@ -140,6 +157,8 @@ class AstronomyExpertSystem:
            self.start_button.config(state="disabled")  # Disable start button during questioning
            self.yes_button.config(state="normal")  # Enable yes/no buttons
            self.no_button.config(state="normal")
+           self.histogram_button.config(state="normal")  # Enable histogram button after starting the game
+
            self.update_probabilities_display()  # Show initial probabilities
 
     def process_answer(self, answer):
@@ -186,6 +205,22 @@ class AstronomyExpertSystem:
            probabilities_text += f"\nI might guess: {guess_planet}!"
        
        self.probability_label.config(text=probabilities_text)
+
+    def show_histogram(self):
+       """Display a histogram of the current probabilities."""
+       planets = list(self.expert_system.possible_planets.keys())
+       probabilities = list(self.expert_system.possible_planets.values())
+
+       plt.figure(figsize=(10, 6))
+       sns.barplot(x=planets, y=probabilities, palette='viridis')
+       
+       plt.title('Current Probabilities of Celestial Objects')
+       plt.xlabel('Celestial Objects')
+       plt.ylabel('Probability')
+       plt.xticks(rotation=45)
+       
+       plt.tight_layout()
+       plt.show()
 
 def main():
     root = tk.Tk()
