@@ -260,65 +260,6 @@ class AstronomyExpertSystem:
         )
 
 
-
-    # def update_histogram(self):
-    #     """Update the histogram on the canvas with current probabilities."""
-    #     # Clear any existing widgets in the canvas frame
-    #     for widget in self.canvas_frame.winfo_children():
-    #         widget.destroy()
-        
-    #     # Create a new figure with a specific size
-    #     plt.figure(figsize=(8, 6), dpi=100, facecolor=self.colors['bg_medium'])
-        
-    #     # Convert probabilities to a DataFrame
-    #     df = pd.DataFrame({
-    #         'Celestial Object': list(self.expert_system.possible_planets.keys()),
-    #         'Probability': list(self.expert_system.possible_planets.values())
-    #     })
-        
-    #     # Set up the plot with a dark theme
-    #     plt.style.use('dark_background')
-        
-    #     # Plot using seaborn with enhanced styling
-    #     ax = sns.barplot(
-    #         x='Celestial Object', 
-    #         y='Probability', 
-    #         data=df, 
-    #         palette='viridis', 
-    #         hue='Celestial Object', 
-    #         dodge=False,
-    #         legend=False
-    #     )
-        
-    #     # Customizing the plot
-    #     plt.title('Probability of Celestial Objects', 
-    #               color=self.colors['text'], 
-    #               fontsize=16, 
-    #               fontweight='bold')
-    #     plt.xlabel('Celestial Objects', color=self.colors['text'])
-    #     plt.ylabel('Probability', color=self.colors['text'])
-    #     plt.xticks(rotation=45, color=self.colors['text'])
-    #     plt.yticks(color=self.colors['text'])
-        
-    #     # Add value labels on top of each bar
-    #     for i, v in enumerate(df['Probability']):
-    #         ax.text(i, v, f'{v:.4f}', 
-    #                 ha='center', va='bottom', 
-    #                 color=self.colors['text'], 
-    #                 fontweight='bold')
-        
-    #     plt.tight_layout()
-
-    #     # Create canvas and embed plot in Tkinter
-    #     canvas = FigureCanvasTkAgg(plt.gcf(), master=self.canvas_frame)
-    #     canvas_widget = canvas.get_tk_widget()
-    #     canvas_widget.pack(fill=tk.BOTH, expand=True)
-        
-    #     # Draw the canvas
-    #     canvas.draw()
-        
-    #     # Close the figure to free up memory
-    #     plt.close()
     def create_histogram(self, df):
         plt.figure(figsize=(8, 6), dpi=100, facecolor=self.colors['bg_medium'])
         plt.style.use('dark_background')
