@@ -1,13 +1,49 @@
 import tkinter as tk
 from tkinter import ttk
-from tkinter import messagebox
-import tkinter.font as tkFont
-import matplotlib.pyplot as plt
-import seaborn as sns
 import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from Expert_System.knlowledge_engineGUIntegr import SolarSystemExpertGUI
+import tkinter.font as tkFont
 
+class SolarSystemExpertGUI:
+    def __init__(self):
+        self.reset_game()
+
+    def reset_game(self):
+        self.current_question = 0
+        self.probabilities = {'Mercury': 0.125, 'Venus': 0.125, 'Earth': 0.125, 'Mars': 0.125,
+                              'Jupiter': 0.125, 'Saturn': 0.125, 'Uranus': 0.125, 'Neptune': 0.125}
+        self.feature_map = {}
+
+    def get_next_question(self):
+        questions = [
+            ("Is it closer to the Sun than Earth?", "Mercury, Venus, Earth", {"Mercury": True, "Venus": True, "Earth": False}),
+            ("Does it have rings?", "Saturn, Jupiter, Uranus, Neptune", {"Saturn": True, "Jupiter": False, "Uranus": True, "Neptune": True}),
+            ("Is it the third planet from the Sun?", "Earth", {"Earth": True}),
+            ("Does it have a solid surface?", "Mercury, Venus, Earth, Mars", {"Mercury": True, "Venus": True, "Earth": True, "Mars": True}),
+        ]
+        
+        if self.current_question < len(questions):
+            question, feature, feature_map = questions[self.current_question]
+            self.feature_map = feature_map
+            self.current_question += 1
+            return question, feature, feature_map
+        else:
+            return None
+
+    def update_probabilities(self, question_id, answer, feature_map):
+        for planet, is_answered in feature_map.items():
+            if is_answered == answer:
+                self.probabilities[planet] += 0.25
+            else:
+                self.probabilities[planet] -= 0.25
+
+    def get_most_likely_planet(self):
+        return max(self.probabilities, key=self.probabilities.get)
+
+    def get_probability_dataframe(self):
+        return pd.DataFrame(list(self.probabilities.items()), columns=["Celestial Object", "Probability"])
 
 class AstronomyExpertSystem:
     def __init__(self, root):
@@ -138,8 +174,8 @@ class AstronomyExpertSystem:
         self.initialize_histogram()
         question = self.expert_system.get_next_question()
         if question:
-            question_id, question_text, feature_map = question
-            self.current_question_id = question_id
+            question_text, feature, feature_map = question
+            self.current_question_text = question_text
             self.current_feature_map = feature_map
             self.question_label.config(text=question_text)
             self.yes_button.config(state="normal")
@@ -147,41 +183,36 @@ class AstronomyExpertSystem:
             self.start_button.config(state="disabled")
             self.reset_button.config(state="normal")
             self.thinking_label.config(text="🤔 THINKING... 🌌")
+        else:
+            self.thinking_label.config(text="🤔 No questions available!")
 
     def process_answer(self, answer):
-        self.expert_system.update_probabilities(self.current_question_id, answer, self.current_feature_map)
+        self.expert_system.update_probabilities(self.current_question_text, answer, self.current_feature_map)
         next_question = self.expert_system.get_next_question()
         if next_question:
-            question_id, question_text, feature_map = next_question
-            self.current_question_id = question_id
+            question_text, feature, feature_map = next_question
+            self.current_question_text = question_text
             self.current_feature_map = feature_map
             self.question_label.config(text=question_text)
         else:
             guess = self.expert_system.get_most_likely_planet()
-            self.thinking_label.config(text=f"🌍 I think it is {guess}!")
+            self.thinking_label.config(text=f"🤩 Is it {guess}?")
             self.yes_button.config(state="disabled")
             self.no_button.config(state="disabled")
-            self.start_button.config(state="normal")
         self.update_histogram()
+
+    def update_histogram(self):
+        self.create_histogram(self.expert_system.get_probability_dataframe())
 
     def reset_game(self):
         self.expert_system.reset_game()
         self.initialize_histogram()
-        self.question_label.config(text="🌟 Think of a celestial object and press Start! 🌟")
         self.start_button.config(state="normal")
         self.yes_button.config(state="disabled")
         self.no_button.config(state="disabled")
         self.reset_button.config(state="disabled")
+        self.question_label.config(text="🌟 Think of a celestial object and press Start! 🌟")
         self.thinking_label.config(text="🤔 THINKING... 🌌")
-
-    def update_histogram(self):
-        probabilities = self.expert_system.get_probabilities()
-        df = pd.DataFrame({
-            'Celestial Object': list(probabilities.keys()),
-            'Probability': list(probabilities.values())
-        })
-        self.create_histogram(df)
-
 
 if __name__ == "__main__":
     root = tk.Tk()
