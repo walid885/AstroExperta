@@ -6,7 +6,6 @@
   <title>Astro Academy</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;700;900&family=Space+Grotesk:wght@400;500;700&display=swap">
-  
 </head>
 <body class="bg-gradient-to-b from-black to-blue-900 text-white">
 
@@ -14,6 +13,7 @@
   <header class="bg-black bg-opacity-70 py-4 fixed w-full top-0 z-50 shadow-lg">
     <div class="container mx-auto flex justify-between items-center px-4">
       <div class="flex items-center space-x-4">
+<<<<<<< HEAD
       <div class="size-4">
         <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
@@ -24,6 +24,18 @@
           ></path>
         </svg>
       </div>
+=======
+        <div class="size-4">
+          <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              fill-rule="evenodd"
+              clip-rule="evenodd"
+              d="M39.475 21.6262C40.358 21.4363 40.6863 21.5589 40.7581 21.5934C40.7876 21.655 40.8547 21.857 40.8082 22.3336C40.7408 23.0255 40.4502 24.0046 39.8572 25.2301C38.6799 27.6631 36.5085 30.6631 33.5858 33.5858C30.6631 36.5085 27.6632 38.6799 25.2301 39.8572C24.0046 40.4502 23.0255 40.7407 22.3336 40.8082C21.8571 40.8547 21.6551 40.7875 21.5934 40.7581C21.5589 40.6863 21.4363 40.358 21.6262 39.475C21.8562 38.4054 22.4689 36.9657 23.5038 35.2817C24.7575 33.2417 26.5497 30.9744 28.7621 28.762C30.9744 26.5497 33.2417 24.7574 35.2817 23.5037C36.9657 22.4689 38.4054 21.8562 39.475 21.6262ZM4.41189 29.2403L18.7597 43.5881C19.8813 44.7097 21.4027 44.9179 22.7217 44.7893C24.0585 44.659 25.5148 44.1631 26.9723 43.4579C29.9052 42.0387 33.2618 39.5667 36.4142 36.4142C39.5667 33.2618 42.0387 29.9052 43.4579 26.9723C44.1631 25.5148 44.659 24.0585 44.7893 22.7217C44.9179 21.4027 44.7097 19.8813 43.5881 18.7597L29.2403 4.41187C27.8527 3.02428 25.8765 3.02573 24.2861 3.36776C22.6081 3.72863 20.7334 4.58419 18.8396 5.74801C16.4978 7.18716 13.9881 9.18353 11.5858 11.5858C9.18354 13.988 7.18717 16.4978 5.74802 18.8396C4.58421 20.7334 3.72865 22.6081 3.36778 24.2861C3.02574 25.8765 3.02429 27.8527 4.41189 29.2403Z"
+              fill="currentColor"
+            ></path>
+          </svg>
+        </div>
+>>>>>>> 0616799da641a90dcd0987aa315cbd6f37e52bc9
         <h1 class="text-2xl font-bold text-blue-300">Astro Academy</h1>
       </div>
       <nav class="hidden md:flex space-x-6">
@@ -31,7 +43,7 @@
         <a href="#courses" class="hover:text-blue-300 transition">Courses</a>
         <a href="#" onclick="launchGUI()" class="text-white text-sm font-medium leading-normal px-4 hover:text-[#a0aec0]">Play with Astro Expert</a>
         <a href="#mentorship" class="hover:text-blue-300 transition">Mentorship</a>
-        <button class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition">Sign In</button>
+        <button class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition" onclick="openRegistrationModal()">Sign In</button>
       </nav>
       <button class="block md:hidden text-white focus:outline-none">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -66,6 +78,7 @@
             <a href="#" class="block mt-4 bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 text-center rounded-lg transition">S'inscrire</a>
           </div>
         </div>
+<<<<<<< HEAD
         <!-- Add more cards dynamically -->
         <div class="bg-gray-800 rounded-lg shadow-lg hover:shadow-blue-500/50 transition-all">
           <img src="..\static\Media\learn2.jpeg" alt="Course 1" class="w-full h-40 object-cover rounded-t-lg">
@@ -91,26 +104,53 @@
         <h3 class="text-lg font-bold text-white">Astronomy Basics</h3>
         <p class="text-gray-400 mt-2">Learn the fundamentals of stargazing and celestial navigation.</p>
         <a href="#" class="block mt-4 bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 text-center rounded-lg transition">S'inscrire</a>
+=======
+>>>>>>> 0616799da641a90dcd0987aa315cbd6f37e52bc9
       </div>
   </section>
 
-  <!-- Community Section -->
-  <section id="community" class="py-16 bg-black bg-opacity-80 text-center">
-    <div class="container mx-auto">
-      <h2 class="text-4xl font-bold text-white">Join Our Community</h2>
-      <p class="text-gray-400 mt-4">Connect with fellow stargazers and learn from experts.</p>
-    </div>
-  </section>
+  <!-- Modal for Registration Form -->
+<div id="registration-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-center z-50 flex">
+  <div class="bg-gray-800 p-6 rounded-lg w-96">
+    <h2 class="text-xl font-bold mb-4 text-white">Create an Account</h2>
+    <form>
+      <div class="mb-4">
+        <label for="reg-username" class="block text-white">Username</label>
+        <input type="text" id="reg-username" class="w-full p-2 mt-2 bg-gray-700 text-white rounded-lg" required />
+      </div>
+      <div class="mb-4">
+        <label for="reg-email" class="block text-white">Email</label>
+        <input type="email" id="reg-email" class="w-full p-2 mt-2 bg-gray-700 text-white rounded-lg" required />
+      </div>
+      <div class="mb-4">
+        <label for="reg-password" class="block text-white">Password</label>
+        <input type="password" id="reg-password" class="w-full p-2 mt-2 bg-gray-700 text-white rounded-lg" required />
+      </div>
+      <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg">Register</button>
+    </form>
+    <button class="mt-4 w-full bg-blue-400 text-white py-2 rounded-lg" onclick="closeModal()">Cancel</button>
+  </div>
+</div>
 
-  <!-- Footer -->
+    
+
   <footer class="bg-black text-gray-400 py-4">
     <div class="container mx-auto text-center">
       <p>&copy; 2024 Astro Academy. All rights reserved.</p>
     </div>
   </footer>
 
-</body>
-<script>
+  <script>
+  function openRegistrationModal() {
+    document.getElementById('registration-modal').classList.remove('hidden');
+  }
+
+  // Close the registration modal
+  function closeModal() {
+    document.getElementById('registration-modal').classList.add('hidden');
+  }
+
+
     function launchGUI() {
         fetch('http://localhost:5000/launch-gui')
             .then(response => response.json())
@@ -123,5 +163,7 @@
             })
             .catch(error => console.error('Error:', error));
     }
-    </script>
+  </script>
+
+</body>
 </html>
