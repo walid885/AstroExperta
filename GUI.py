@@ -97,27 +97,30 @@ class AstronomyExpertSystem:
             self.buttons_frame,
             text="Start Journey",
             style='Start.TButton',
-            command=self.start_game
+            command=self.start_game,
+            
         )
         self.start_button.grid(row=0, column=1, padx=10)
         
         self.yes_button = ttk.Button(
             self.buttons_frame,
             text="Yes",
-            style='Answer.TButton',
+            style='Yes.TButton',  # Changed from 'Answer.TButton'
             command=lambda: self.process_answer(True),
             state="disabled"
         )
         self.yes_button.grid(row=0, column=0, padx=10)
+
         
         self.no_button = ttk.Button(
             self.buttons_frame,
             text="No",
-            style='Answer.TButton',
+            style='No.TButton',  # Changed from 'Answer.TButton'
             command=lambda: self.process_answer(False),
             state="disabled"
         )
         self.no_button.grid(row=0, column=2, padx=10)
+
         
         # Right Column - Thinking Frame
         self.thinking_frame = ttk.LabelFrame(
@@ -201,6 +204,25 @@ class AstronomyExpertSystem:
                          background=self.colors['warning_yellow'], 
                          foreground=self.colors['text'], 
                          font=('Helvetica', 12), padding=10)
+        style.configure('Yes.TButton',
+                    background=self.colors['success_green'],
+                    foreground=self.colors['text'],
+                    font=('Helvetica', 12, 'bold'),
+                    padding=10)
+        style.map('Yes.TButton', 
+              background=[('disabled', self.colors['bg_medium'])],
+              foreground=[('disabled', self.colors['text'])])
+
+    # No button style - use a red tone that fits the color palette
+        style.configure('No.TButton',
+                    background='#E74C3C',  # A vibrant red that complements the existing palette
+                    foreground=self.colors['text'],
+                    font=('Helvetica', 12, 'bold'),
+                    padding=10)
+        style.map('No.TButton', 
+              background=[('disabled', self.colors['bg_medium'])],
+              foreground=[('disabled', self.colors['text'])])
+
 
 
     def process_answer(self, answer):
