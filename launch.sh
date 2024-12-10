@@ -17,7 +17,8 @@ activate_venv() {
 
 # Function to install dependencies
 install_dependencies() {
-    pip install flask
+    # Install required packages
+    pip install flask pandas seaborn matplotlib
     echo "Dependencies installed successfully."
 }
 
