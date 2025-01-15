@@ -1,4 +1,4 @@
-#!/bin/bash
+!/bin/bash
 
 # Set up virtual environment and project paths
 PROJECT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -17,7 +17,8 @@ activate_venv() {
 
 # Function to install dependencies
 install_dependencies() {
-    pip install flask
+    # Install required packages
+    pip install flask pandas seaborn matplotlib
     echo "Dependencies installed successfully."
 }
 

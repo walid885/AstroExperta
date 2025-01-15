@@ -154,10 +154,15 @@ class SolarSystemExpertGUI(KnowledgeEngine):
                 else:
                     # Again reduce but retain some probability
                     self.possible_planets[planet] *= 0.1  # Reduce but retain some probability
+
+
+
     def calculate_entropy(self, probabilities: Dict[str, float]) -> float:
         """Calculate the entropy of a probability distribution."""
         from math import log2
         return -sum(p * log2(p) for p in probabilities.values() if p > 0)
+    
+    
 
     def ask_question(self) -> Optional[tuple]:
         """Select the next most informative question to ask."""

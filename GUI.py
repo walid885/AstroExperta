@@ -109,20 +109,42 @@ class AstronomyExpertSystem:
             wraplength=350
         )
         self.question_label.pack(pady=20, expand=True)
+        
+        # Buttons Frame within Question Frame
+        self.buttons_frame = ttk.Frame(self.question_frame, style='Main.TFrame')
+        self.buttons_frame.pack(pady=20)
+        
+        # Buttons
+        self.start_button = ttk.Button(
+            self.buttons_frame,
+            text="Start Journey",
+            style='Start.TButton',
+            command=self.start_game,
+            
+        )
+        self.start_button.grid(row=0, column=1, padx=10)
+        
+        self.yes_button = ttk.Button(
+            self.buttons_frame,
+            text="Yes",
+            style='Yes.TButton',  # Changed from 'Answer.TButton'
+            command=lambda: self.process_answer(True),
+            state="disabled"
+        )
+        self.yes_button.grid(row=0, column=0, padx=10)
 
-        # Buttons Frame
-        self.buttons_frame = ttk.Frame(self.question_frame)
-        self.buttons_frame.pack(pady=10)
-        self.start_button = ttk.Button(self.buttons_frame, text="Start Journey", command=self.start_game)
-        self.start_button.grid(row=0, column=1, padx=5)
-        self.yes_button = ttk.Button(self.buttons_frame, text="Yes", command=lambda: self.process_answer(True), state="disabled")
-        self.yes_button.grid(row=0, column=0, padx=5)
-        self.no_button = ttk.Button(self.buttons_frame, text="No", command=lambda: self.process_answer(False), state="disabled")
-        self.no_button.grid(row=0, column=2, padx=5)
-        self.reset_button = ttk.Button(self.buttons_frame, text="Reset Game", command=self.reset_game, state="disabled")
-        self.reset_button.grid(row=1, column=1, padx=5, pady=(10, 0))
+        
+        self.no_button = ttk.Button(
+            self.buttons_frame,
+            text="No",
+            style='No.TButton',  # Changed from 'Answer.TButton'
+            command=lambda: self.process_answer(False),
+            state="disabled"
+        )
+        self.no_button.grid(row=0, column=2, padx=10)
 
-        # Thinking Frame (Right)
+        
+        # Right Column - Thinking Frame
         self.thinking_frame = ttk.LabelFrame(
             self.container,
             text="System's Thought Process",
@@ -144,11 +166,150 @@ class AstronomyExpertSystem:
 
     def setup_styles(self):
         style = ttk.Style()
-        style.theme_use("default")  # Use a default theme
-        style.configure("TLabelFrame", background="#1B2559", foreground="#E6E8F0", relief="ridge")
-        style.configure("TLabelFrame.Label", background="#1B2559", foreground="#E6E8F0")
-        style.configure("TButton", background="#4B61D1", foreground="#E6E8F0", padding=5)
-        style.configure("TLabel", background="#1B2559", foreground="#E6E8F0")
+        style.configure('Main.TFrame', background=self.colors['bg_dark'])
+        style.configure('Question.TLabelframe', 
+                       background=self.colors['bg_medium'],
+                       foreground=self.colors['text'])
+        style.configure('Visualization.TLabelframe', 
+                       background=self.colors['bg_medium'],
+                       foreground=self.colors['text'])
+        style.configure('Question.TLabel',
+                       background=self.colors['bg_medium'],
+                       foreground=self.colors['text'])
+        style.configure('Probability.TLabel',
+                       background=self.colors['bg_medium'],
+                       foreground=self.colors['highlight'],
+                       font=('Helvetica', 12, 'bold'))
+        style.configure('Start.TButton',
+                       background=self.colors['accent'],
+                       foreground=self.colors['text'],
+                       font=('Helvetica', 12, 'bold'),
+                       padding=10)
+        style.configure('Answer.TButton',
+                       background=self.colors['bg_medium'],
+                       foreground=self.colors['text'],
+                       font=('Helvetica', 12),
+                       padding=10)
+        style.configure('Thinking.TLabelframe', 
+                       background=self.colors['bg_medium'],
+                       foreground=self.colors['text'])
+        style.configure('Thinking.TLabel',
+                       background=self.colors['bg_medium'],
+                       foreground=self.colors['highlight'],
+                       font=('Helvetica', 16, 'bold'))
+        style.configure('Reset.TButton',
+                         background=self.colors['warning_yellow'], 
+                         foreground=self.colors['text'], 
+                         font=('Helvetica', 12), padding=10)
+        style.configure('Yes.TButton',
+                    background=self.colors['success_green'],
+                    foreground=self.colors['text'],
+                    font=('Helvetica', 12, 'bold'),
+                    padding=10)
+        style.map('Yes.TButton', 
+              background=[('disabled', self.colors['bg_medium'])],
+              foreground=[('disabled', self.colors['text'])])
+
+    # No button style - use a red tone that fits the color palette
+        style.configure('No.TButton',
+                    background='#E74C3C',  # A vibrant red that complements the existing palette
+                    foreground=self.colors['text'],
+                    font=('Helvetica', 12, 'bold'),
+                    padding=10)
+        style.map('No.TButton', 
+              background=[('disabled', self.colors['bg_medium'])],
+              foreground=[('disabled', self.colors['text'])])
+
+
+
+    def process_answer(self, answer):
+        """Process user answers and update game state."""
+        print(f"User answered {'Yes' if answer else 'No'}.")
+        
+        if hasattr(self, 'current_feature_map'):
+            feature_map = self.current_feature_map  
+            question_id = self.current_question_id  
+            print(f"Processing answer for question ID: {question_id}")
+
+            # Update probabilities based on user response (yes/no)
+            self.expert_system.update_probabilities(question_id, answer, feature_map)
+
+            next_question = self.expert_system.get_next_question()
+            
+            if next_question:
+                question_id, question_text, feature_map = next_question  
+                self.current_question_id = question_id  
+                self.current_feature_map = feature_map  
+
+                self.question_label.config(text=question_text)  
+                # Reset thinking label to thinking state
+                self.reset_thinking_label()
+
+            else:
+                guess = self.expert_system.get_most_likely_planet()  
+                
+                # Update thinking label with the guess
+                if guess == "Earth":
+                    self.update_thinking_label(
+                        f"🌍 I think it is {guess}! ✨", 
+                        color=self.colors['success_green']
+                    )
+                else:
+                    self.update_thinking_label(
+                        f"🤔 I think it is {guess}!", 
+                        color=self.colors['warning_yellow']
+                    )
+
+                # Disable answer buttons after game completion
+                self.yes_button.config(state="disabled")
+                self.no_button.config(state="disabled")
+                self.start_button.config(state="normal")
+
+            # Update probabilities display after processing answer.
+            self.update_probabilities_display()
+            # Update histogram after processing answer.
+            self.update_histogram()
+
+
+    def show_result_banner(self, message, color=None):
+        """Display a message in the result banner with optional color."""
+        self.result_banner.config(
+            text=message, 
+            bg=color or self.colors['bg_medium']
+        )
+
+    def reset_result_banner(self):
+        """Reset the result banner to its default state."""
+        self.result_banner.config(
+            text="",
+            bg=self.colors['bg_medium']
+        )
+
+    def reset_game(self):
+        self.expert_system.reset_game()
+        self.update_histogram()  # Use update_histogram instead of initialize_histogram
+        self.question_label.config(text="🌟 Think of a celestial object and press Start! 🌟")
+        self.start_button.config(state="normal")
+        self.yes_button.config(state="disabled")
+        self.no_button.config(state="disabled")
+        self.reset_button.config(state="disabled")
+        self.reset_thinking_label()
+        self.update_probabilities_display()
+
+    
+    def update_thinking_label(self, message, color=None):
+        """Update the thinking label with a specific message and optional color."""
+        self.thinking_label.config(
+            text=message, 
+            foreground=color or self.colors['text']
+        )
+
+    def reset_thinking_label(self):
+        """Reset the thinking label to its default state."""
+        self.thinking_label.config(
+            text="🤔 THINKING... 🌌",
+            foreground=self.colors['highlight']
+        )
 
     def initialize_histogram(self):
         fixed_objects = ['Mercury', 'Venus', 'Earth', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune']
