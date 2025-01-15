@@ -1,90 +1,112 @@
 import tkinter as tk
 from tkinter import ttk
-from tkinter import messagebox
-import tkinter.font as tkFont
-import matplotlib.pyplot as plt
-import seaborn as sns
 import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from Expert_System.knlowledge_engineGUIntegr import SolarSystemExpertGUI  # Ensure correct import
+import tkinter.font as tkFont
+
+class SolarSystemExpertGUI:
+    def __init__(self):
+        self.reset_game()
+
+    def reset_game(self):
+        self.current_question = 0
+        self.probabilities = {'Mercury': 0.125, 'Venus': 0.125, 'Earth': 0.125, 'Mars': 0.125,
+                              'Jupiter': 0.125, 'Saturn': 0.125, 'Uranus': 0.125, 'Neptune': 0.125}
+        self.feature_map = {}
+
+    def get_next_question(self):
+        questions = [
+            ("Is it closer to the Sun than Earth?", "Mercury, Venus, Earth", {"Mercury": True, "Venus": True, "Earth": False}),
+            ("Does it have rings?", "Saturn, Jupiter, Uranus, Neptune", {"Saturn": True, "Jupiter": False, "Uranus": True, "Neptune": True}),
+            ("Is it the third planet from the Sun?", "Earth", {"Earth": True}),
+            ("Does it have a solid surface?", "Mercury, Venus, Earth, Mars", {"Mercury": True, "Venus": True, "Earth": True, "Mars": True}),
+        ]
+        
+        if self.current_question < len(questions):
+            question, feature, feature_map = questions[self.current_question]
+            self.feature_map = feature_map
+            self.current_question += 1
+            return question, feature, feature_map
+        else:
+            return None
+
+    def update_probabilities(self, question_id, answer, feature_map):
+        for planet, is_answered in feature_map.items():
+            if is_answered == answer:
+                self.probabilities[planet] += 0.25
+            else:
+                self.probabilities[planet] -= 0.25
+
+    def get_most_likely_planet(self):
+        return max(self.probabilities, key=self.probabilities.get)
+
+    def get_probability_dataframe(self):
+        return pd.DataFrame(list(self.probabilities.items()), columns=["Celestial Object", "Probability"])
 
 class AstronomyExpertSystem:
     def __init__(self, root):
         self.root = root
         self.root.title("AstroAcademy Expert System")
-        self.root.geometry("1400x800")  # Increased window size to accommodate new frame
-        
-        # Enhanced color scheme (previous colors remain the same)
-        self.colors = {
-            'bg_dark': '#0B1026',      # Deep space blue
-            'bg_medium': '#1B2559',    # Midnight blue
-            'accent': '#4B61D1',       # Stellar blue
-            'text': '#E6E8F0',         # Starlight white
-            'highlight': '#8B9EF0',    # Nebula purple
-            'background_soft': '#2C3E50',  # Soft dark background
-            'success_green': '#2ECC71',    # Success green
-            'warning_yellow': '#F39C12'    # Warning yellow
-        }
-        
-        # Configure the root window
-        self.root.configure(bg=self.colors['bg_dark'])
-        
-        # Initialize the expert system
+
+        # Set window size and allow resizing
+        self.root.geometry("1200x700")
+        self.root.minsize(1200, 700)
+        self.root.configure(bg='#0B1026')  # Background color
+
+        # Initialize expert system
         self.expert_system = SolarSystemExpertGUI()
-        
-        # Configure styles
+
+        # Main container frame
+        self.container = ttk.Frame(self.root)
+        self.container.grid(row=0, column=0, sticky="nsew")
+
+        # Configure grid responsiveness
+        self.container.grid_rowconfigure(0, weight=1)
+        self.container.grid_columnconfigure(0, weight=1)
+        self.container.grid_columnconfigure(1, weight=1)
+        self.container.grid_columnconfigure(2, weight=1)
+
+        # Styles configuration
         self.setup_styles()
-        
-        # Configure grid layout
-        self.root.grid_rowconfigure(0, weight=1)
-        self.root.grid_columnconfigure(0, weight=1)
-        
-        # Create main frame with three columns
-        self.main_frame = ttk.Frame(self.root, style='Main.TFrame', padding="30")
-        self.main_frame.grid(row=0, column=0, sticky="nsew")
-        self.main_frame.grid_columnconfigure(0, weight=1)  # Visualization
-        self.main_frame.grid_columnconfigure(1, weight=1)  # Question
-        self.main_frame.grid_columnconfigure(2, weight=1)  # Thinking Frame
-        
+
         # Title Label
-        title_font = tkFont.Font(family="Helvetica", size=28, weight="bold")
+        title_font = tkFont.Font(family="Helvetica", size=24, weight="bold")
         self.title_label = tk.Label(
-            self.main_frame,
+            self.container,
             text="✧ AstroAcademy Expert System ✧",
             font=title_font,
-            bg=self.colors['bg_dark'],
-            fg=self.colors['text']
+            bg="#0B1026",
+            fg="#E6E8F0"
         )
-        self.title_label.grid(row=0, column=0, columnspan=3, pady=(0, 30), sticky="ew")
-        
-        # Left Column - Probability Visualization Frame
+        self.title_label.grid(row=0, column=0, columnspan=3, pady=20, sticky="n")
+
+        # Visualization Frame (Left)
         self.visualization_frame = ttk.LabelFrame(
-            self.main_frame,
+            self.container,
             text="Probability Visualization",
-            style='Visualization.TLabelframe',
-            padding="20"
+            padding="10"
         )
-        self.visualization_frame.grid(row=1, column=0, sticky="nsew", padx=10, pady=10)
-        
-        # Placeholder for matplotlib canvas
+        self.visualization_frame.grid(row=1, column=0, padx=10, pady=10, sticky="nsew")
+        self.visualization_frame.grid_rowconfigure(0, weight=1)
+        self.visualization_frame.grid_columnconfigure(0, weight=1)
         self.canvas_frame = ttk.Frame(self.visualization_frame)
         self.canvas_frame.pack(fill=tk.BOTH, expand=True)
-        
-        # Middle Column - Question Frame
+
+        # Question Frame (Middle)
         self.question_frame = ttk.LabelFrame(
-            self.main_frame,
+            self.container,
             text="Your Cosmic Quest",
-            style='Question.TLabelframe',
-            padding="20"
+            padding="10"
         )
-        self.question_frame.grid(row=1, column=1, sticky="nsew", padx=10, pady=10)
-        
-        # Question Label
+        self.question_frame.grid(row=1, column=1, padx=10, pady=10, sticky="nsew")
+        self.question_frame.grid_rowconfigure(0, weight=1)
         self.question_label = ttk.Label(
             self.question_frame,
             text="🌟 Think of a celestial object and press Start! 🌟",
-            style='Question.TLabel',
-            font=("Helvetica", 16)
+            font=("Helvetica", 16),
+            wraplength=350
         )
         self.question_label.pack(pady=20, expand=True)
         
@@ -124,50 +146,25 @@ class AstronomyExpertSystem:
         
         # Right Column - Thinking Frame
         self.thinking_frame = ttk.LabelFrame(
-            self.main_frame,
+            self.container,
             text="System's Thought Process",
-            style='Thinking.TLabelframe',
-            padding="20"
+            padding="10"
         )
-        self.thinking_frame.grid(row=1, column=2, sticky="nsew", padx=10, pady=10)
-        
-        # Thinking Label
+        self.thinking_frame.grid(row=1, column=2, padx=10, pady=10, sticky="nsew")
+        self.thinking_frame.grid_rowconfigure(0, weight=1)
         self.thinking_label = ttk.Label(
             self.thinking_frame,
             text="🤔 THINKING... 🌌",
-            style='Thinking.TLabel',
             font=("Helvetica", 16, "bold")
         )
         self.thinking_label.pack(pady=20, expand=True)
+        self.probability_label = ttk.Label(self.thinking_frame, text="Current Probabilities:")
+        self.probability_label.pack(pady=10)
 
-
-        
-        # Probability Label in Thinking Frame
-        self.probability_label = ttk.Label(
-            self.thinking_frame,
-            text="Current Probabilities: ",
-            style='Probability.TLabel',
-            font=("Helvetica", 12)
-        )
-        self.probability_label.pack(pady=20)
+        # Initialize histogram
         self.initialize_histogram()
-        self.reset_button = ttk.Button(
-        self.buttons_frame,
-        text="Reset Game",
-        style='Reset.TButton',
-        command=self.reset_game,
-        state="disabled"
-    )
-        
-        self.reset_button.grid(row=1, column=1, padx=10, pady=(10, 0))
-
-
-
-
-
 
     def setup_styles(self):
-        """Configure custom styles for the application"""
         style = ttk.Style()
         style.configure('Main.TFrame', background=self.colors['bg_dark'])
         style.configure('Question.TLabelframe', 
@@ -314,209 +311,71 @@ class AstronomyExpertSystem:
             foreground=self.colors['highlight']
         )
 
-
-    def create_histogram(self, df):
-        plt.figure(figsize=(8, 6), dpi=100, facecolor=self.colors['bg_medium'])
-        plt.style.use('dark_background')
-        ax = sns.barplot(
-            x='Celestial Object', y='Probability', data=df,
-            palette='viridis', hue='Celestial Object', dodge=False, legend=False
-        )
-        
-        plt.title('Probability of Celestial Objects', color=self.colors['text'], fontsize=16, fontweight='bold')
-        plt.xlabel('Celestial Objects', color=self.colors['text'])
-        plt.ylabel('Probability', color=self.colors['text'])
-        plt.xticks(rotation=45, color=self.colors['text'])
-        plt.yticks(color=self.colors['text'])
-        
-        for i, v in enumerate(df['Probability']):
-            ax.text(i, v, f'{v:.4f}', ha='center', va='bottom', color=self.colors['text'], fontweight='bold')
-        
-        plt.tight_layout()
-        
-        canvas = FigureCanvasTkAgg(plt.gcf(), master=self.canvas_frame)
-        canvas_widget = canvas.get_tk_widget()
-        canvas_widget.pack(fill=tk.BOTH, expand=True)
-        canvas.draw()
-        plt.close()
-
-
-
-    def update_histogram(self):
-        for widget in self.canvas_frame.winfo_children():
-            widget.destroy()
-        fixed_objects = ['Mercury', 'Venus', 'Earth', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune']
-        all_probabilities = {obj: 0.125 for obj in fixed_objects}  # Equal probability for reset
-        all_probabilities.update(self.expert_system.possible_planets)
-        df = pd.DataFrame({
-            'Celestial Object': fixed_objects,
-            'Probability': [all_probabilities[obj] for obj in fixed_objects]
-        })
-        self.create_histogram(df)
-
     def initialize_histogram(self):
         fixed_objects = ['Mercury', 'Venus', 'Earth', 'Mars', 'Jupiter', 'Saturn', 'Uranus', 'Neptune']
-        initial_probabilities = {obj: 0.125 for obj in fixed_objects}  # Equal probability for all objects
-        
-        df = pd.DataFrame({
-            'Celestial Object': fixed_objects,
-            'Probability': [initial_probabilities[obj] for obj in fixed_objects]
-        })
-        
+        probabilities = [0.125] * len(fixed_objects)
+        df = pd.DataFrame({'Celestial Object': fixed_objects, 'Probability': probabilities})
         self.create_histogram(df)
 
+    def create_histogram(self, df):
+        for widget in self.canvas_frame.winfo_children():
+            widget.destroy()
+        plt.figure(figsize=(5, 4))
+        sns.barplot(x='Celestial Object', y='Probability', data=df, palette='viridis')
+        plt.title('Probability of Celestial Objects')
+        plt.xlabel('Celestial Objects')
+        plt.ylabel('Probability')
+        plt.tight_layout()
+        canvas = FigureCanvasTkAgg(plt.gcf(), master=self.canvas_frame)
+        canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+        canvas.draw()
 
     def start_game(self):
         self.expert_system.reset_game()
         self.initialize_histogram()
         question = self.expert_system.get_next_question()
         if question:
-            question_id, question_text, feature_map = question
-            self.current_question_id = question_id
+            question_text, feature, feature_map = question
+            self.current_question_text = question_text
             self.current_feature_map = feature_map
             self.question_label.config(text=question_text)
-            self.start_button.config(state="disabled")
             self.yes_button.config(state="normal")
             self.no_button.config(state="normal")
-            self.reset_button.config(state="normal")  # Enable reset button
-            self.reset_thinking_label()
-            self.update_probabilities_display()
-            self.update_histogram()
-
+            self.start_button.config(state="disabled")
+            self.reset_button.config(state="normal")
+            self.thinking_label.config(text="🤔 THINKING... 🌌")
+        else:
+            self.thinking_label.config(text="🤔 No questions available!")
 
     def process_answer(self, answer):
-        """Process user answers and update game state."""
-        print(f"User answered {'Yes' if answer else 'No'}.")
-        
-        if hasattr(self, 'current_feature_map'):
-            feature_map = self.current_feature_map  
-            question_id = self.current_question_id  
-            print(f"Processing answer for question ID: {question_id}")
-
-            # Update probabilities based on user response (yes/no)
-            self.expert_system.update_probabilities(question_id, answer, feature_map)
-
-            next_question = self.expert_system.get_next_question()
-            
-            if next_question:
-                question_id, question_text, feature_map = next_question  
-                self.current_question_id = question_id  
-                self.current_feature_map = feature_map  
-
-                self.question_label.config(text=question_text)  
-                # Reset thinking label to thinking state
-                self.reset_thinking_label()
-
-            else:
-                guess = self.expert_system.get_most_likely_planet()  
-                
-                # Update thinking and buttons for game completion
-                self.update_final_guess(guess)
-
-            # Update probabilities display after processing answer.
-            self.update_probabilities_display()
-            # Update histogram after processing answer.
-            self.update_histogram()
-    def update_final_guess(self, guess):
-            """
-            Elegantly display the final guess with enhanced visual and informative feedback.
-            
-            Provides a comprehensive breakdown of the guess, including:
-            - Planet emoji
-            - Confidence level
-            - Detailed probability explanation
-            """
-            planet_emojis = {
-                "Mercury": "☿", "Venus": "♀", 
-                "Earth": "🌍", "Mars": "♂",
-                "Jupiter": "♃", "Saturn": "♄", 
-                "Uranus": "⛢", "Neptune": "♆"
-            }
-
-            emoji = planet_emojis.get(guess, "🌠")
-            confidence = self.expert_system.possible_planets.get(guess, 0)
-            
-            # Create a more detailed probability breakdown
-            probabilities = self.expert_system.possible_planets
-            sorted_probabilities = sorted(probabilities.items(), key=lambda x: x[1], reverse=True)
-            
-            # Generate a detailed probability explanation
-            prob_explanation = "Probability Breakdown:\n"
-            for planet, prob in sorted_probabilities[:3]:  # Show top 3 most likely planets
-                prob_explanation += f"{planet}: {prob*100:.2f}%\n"
-
-            # Determine confidence message based on probability
-            if confidence >= 0.8:
-                confidence_message = "High Confidence! 🌟"
-                color = self.colors['success_green']
-            elif confidence >= 0.5:
-                confidence_message = "Moderate Confidence 🔍"
-                color = self.colors['highlight']
-            else:
-                confidence_message = "Low Confidence 🤨"
-                color = self.colors['warning_yellow']
-
-            # Comprehensive thinking label
-            full_message = (
-                f"🎯 Final Guess: {guess} {emoji}\n"
-                f"{confidence_message} (Confidence: {confidence*100:.2f}%)\n\n"
-                f"{prob_explanation}"
-            )
-
-            # Update thinking label with comprehensive information
-            self.update_thinking_label(full_message, color=color)
-
-            # Disable/enable buttons appropriately
+        self.expert_system.update_probabilities(self.current_question_text, answer, self.current_feature_map)
+        next_question = self.expert_system.get_next_question()
+        if next_question:
+            question_text, feature, feature_map = next_question
+            self.current_question_text = question_text
+            self.current_feature_map = feature_map
+            self.question_label.config(text=question_text)
+        else:
+            guess = self.expert_system.get_most_likely_planet()
+            self.thinking_label.config(text=f"🤩 Is it {guess}?")
             self.yes_button.config(state="disabled")
             self.no_button.config(state="disabled")
-            self.start_button.config(state="normal")
-            self.reset_button.config(state="normal")    
+        self.update_histogram()
 
+    def update_histogram(self):
+        self.create_histogram(self.expert_system.get_probability_dataframe())
 
-    def setup_emoji_font(self):
-        # Use a font that supports emojis
-        emoji_font = tkFont.Font(family="Segoe UI Emoji", size=12)
-        self.probability_label.configure(font=emoji_font)
+    def reset_game(self):
+        self.expert_system.reset_game()
+        self.initialize_histogram()
+        self.start_button.config(state="normal")
+        self.yes_button.config(state="disabled")
+        self.no_button.config(state="disabled")
+        self.reset_button.config(state="disabled")
+        self.question_label.config(text="🌟 Think of a celestial object and press Start! 🌟")
+        self.thinking_label.config(text="🤔 THINKING... 🌌")
 
-    def update_probabilities_display(self):
-        probabilities_text = "Current Probabilities:\n"
-        for planet, prob in sorted(self.expert_system.possible_planets.items(), key=lambda x: x[1], reverse=True):
-            probabilities_text += f"{planet}: {prob:.4f}\n"
-        
-        if max(self.expert_system.possible_planets.values()) > 0.8:
-            guess_planet = max(self.expert_system.possible_planets.items(), key=lambda x: x[1])[0]
-            probabilities_text += f"\n\U0001F680 BREAKING NEWS: I MIGHT GUESS: {guess_planet.upper()}! \U00002B50"
-        
-        self.probability_label.config(text=probabilities_text)
-
-    def update_guess_thinking(self, probabilities, threshold=0.8):
-        """
-        Update the thinking label with an enthusiastic guess when a planet's 
-        probability exceeds the threshold.
-        """
-        planet_emojis = {
-            "Mercury": "☿", "Venus": "♀", "Earth": "🌍", "Mars": "♂",
-            "Jupiter": "♃", "Saturn": "♄", "Uranus": "⛢", "Neptune": "♆"
-        }
-        
-        for planet, prob in probabilities.items():
-            if prob >= threshold:
-                guess_message = f"Eureka! I think IT'S {planet.upper()}! {planet_emojis[planet]}"
-                self.update_thinking_label(guess_message, self.colors['success'])
-                return
-
-        # If no planet exceeds the threshold, show the current top guess
-        top_planet = max(probabilities, key=probabilities.get)
-        top_prob = probabilities[top_planet]
-        
-        guess_message = f"Hmm... I'm leaning towards {top_planet} {planet_emojis[top_planet]} ({top_prob:.2%})"
-        self.update_thinking_label(guess_message, self.colors['highlight'])
-
-
-def main():
+if __name__ == "__main__":
     root = tk.Tk()
     app = AstronomyExpertSystem(root)
     root.mainloop()
-
-if __name__ == "__main__":
-    main()
